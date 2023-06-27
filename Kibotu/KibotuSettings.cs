@@ -48,7 +48,7 @@ namespace kibotu
         }
 
         #region static
-        private static MixpanelSettings _instance;
+        private static KibotuSettings _instance;
 
         public static void LoadSettings()
         {
@@ -59,19 +59,19 @@ namespace kibotu
             }
         }
 
-        public static MixpanelSettings Instance {
+        public static KibotuSettings Instance {
             get {
                 LoadSettings();
                 return _instance;
             }
         }
 
-        private static MixpanelSettings FindOrCreateInstance()
+        private static KibotuSettings FindOrCreateInstance()
         {
-            MixpanelSettings instance = null;
-            instance = instance ? null : Resources.Load<MixpanelSettings>("Mixpanel");
-            instance = instance ? instance : Resources.LoadAll<MixpanelSettings>(string.Empty).FirstOrDefault();
-            instance = instance ? instance : CreateAndSave<MixpanelSettings>();
+            KibotuSettings instance = null;
+            instance = instance ? null : Resources.Load<KibotuSettings>("Mixpanel");
+            instance = instance ? instance : Resources.LoadAll<KibotuSettings>(string.Empty).FirstOrDefault();
+            instance = instance ? instance : CreateAndSave<KibotuSettings>();
             if (instance == null) throw new Exception("Could not find or create settings for Mixpanel");
             return instance;
         }

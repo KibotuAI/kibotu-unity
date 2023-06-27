@@ -1,6 +1,6 @@
 using System;
 
-namespace mixpanel
+namespace kibotu
 {
     /// <summary>
     /// Core class for interacting with %Mixpanel Analytics.
@@ -16,7 +16,7 @@ namespace mixpanel
     ///        Mixpanel.Identify("CURRENT USER DISTINCT ID");<br/>
     ///        Mixpanel.People.Set("Plan", "Premium");<br/>
     /// </code>
-    public static partial class Mixpanel
+    public static partial class Kibotu
     {
         internal const string MixpanelUnityVersion = "3.4.0";
 
@@ -36,7 +36,7 @@ namespace mixpanel
         {
             bool initialized = Controller.IsInitialized();
             if (!initialized) {
-                Mixpanel.Log("Mixpanel is not initialized");
+                Kibotu.Log("Mixpanel is not initialized");
             }
             return initialized;
         }
@@ -48,7 +48,7 @@ namespace mixpanel
         /// <param name="preferences">the new distinct_id that should represent original</param>
         public static void SetPreferencesSource(IPreferences preferences)
         {
-            MixpanelStorage.SetPreferencesSource(preferences);
+            KibotuStorage.SetPreferencesSource(preferences);
         }
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace mixpanel
         public static void Alias(string alias)
         {
             if (!IsInitialized()) return;
-            if (alias == MixpanelStorage.DistinctId) return;
+            if (alias == KibotuStorage.DistinctId) return;
             Value properties = new Value();
             properties["alias"] = alias;
             Track("$create_alias", properties);
-            MixpanelStorage.HasAliased = true;
+            KibotuStorage.HasAliased = true;
             Flush();
         }
 
@@ -72,7 +72,7 @@ namespace mixpanel
         public static void ClearTimedEvents()
         {
             if (!IsInitialized()) return;
-            MixpanelStorage.ResetTimedEvents();
+            KibotuStorage.ResetTimedEvents();
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace mixpanel
         public static void ClearTimedEvent(string eventName)
         {
             if (!IsInitialized()) return;
-            Value properties = MixpanelStorage.TimedEvents;
+            Value properties = KibotuStorage.TimedEvents;
             properties.Remove(eventName);
-            MixpanelStorage.TimedEvents = properties;
+            KibotuStorage.TimedEvents = properties;
         }
 
         /// <summary>
@@ -98,20 +98,20 @@ namespace mixpanel
         public static void Identify(string uniqueId)
         {
             if (!IsInitialized()) return;
-            if (MixpanelStorage.DistinctId == uniqueId) return;
-            string oldDistinctId = MixpanelStorage.DistinctId;
-            MixpanelStorage.DistinctId = uniqueId;
+            if (KibotuStorage.DistinctId == uniqueId) return;
+            string oldDistinctId = KibotuStorage.DistinctId;
+            KibotuStorage.DistinctId = uniqueId;
             Track("$identify", "$anon_distinct_id", oldDistinctId);
-            MixpanelStorage.HasIdendified = true;
+            KibotuStorage.HasIdendified = true;
         }
 
         [Obsolete("Please use 'DistinctId' instead!")]
         public static string DistinctID {
-            get => MixpanelStorage.DistinctId;
+            get => KibotuStorage.DistinctId;
         }
 
         public static string DistinctId {
-            get => MixpanelStorage.DistinctId;
+            get => KibotuStorage.DistinctId;
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace mixpanel
             People.DeleteUser();
             Flush();
             Reset();
-            MixpanelStorage.IsTracking = false;
+            KibotuStorage.IsTracking = false;
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace mixpanel
         public static void OptInTracking()
         {
             if (!IsInitialized()) return;
-            MixpanelStorage.IsTracking = true;
+            KibotuStorage.IsTracking = true;
             Controller.DoTrack("$opt_in", null);
         }
 
@@ -156,9 +156,9 @@ namespace mixpanel
         public static void Register(string key, Value value)
         {
             if (!IsInitialized()) return;
-            Value properties = MixpanelStorage.SuperProperties;
+            Value properties = KibotuStorage.SuperProperties;
             properties[key] = value;
-            MixpanelStorage.SuperProperties = properties;
+            KibotuStorage.SuperProperties = properties;
         }
 
         /// <summary>
@@ -169,24 +169,24 @@ namespace mixpanel
         public static void RegisterOnce(string key, Value value)
         {
             if (!IsInitialized()) return;
-            Value properties = MixpanelStorage.OnceProperties;
+            Value properties = KibotuStorage.OnceProperties;
             properties[key] = value;
-            MixpanelStorage.OnceProperties = properties;
+            KibotuStorage.OnceProperties = properties;
         }
 
         /// <summary>
-        /// Clears all super properties, once properties, timed events from persistent MixpanelStorage.
+        /// Clears all super properties, once properties, timed events from persistent KibotuStorage.
         /// </summary>
         public static void Reset()
         {
             if (!IsInitialized()) return;
-            MixpanelStorage.DeleteAllTrackingData(MixpanelStorage.FlushType.EVENTS);
-            MixpanelStorage.DeleteAllTrackingData(MixpanelStorage.FlushType.PEOPLE);
-            MixpanelStorage.ResetSuperProperties();
-            MixpanelStorage.ResetOnceProperties();
-            MixpanelStorage.ResetTimedEvents();
+            KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.EVENTS);
+            KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.PEOPLE);
+            KibotuStorage.ResetSuperProperties();
+            KibotuStorage.ResetOnceProperties();
+            KibotuStorage.ResetTimedEvents();
             Flush();
-            MixpanelStorage.DistinctId = "";
+            KibotuStorage.DistinctId = "";
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace mixpanel
         /// </summary>
         public static void ClearSuperProperties()
         {
-            MixpanelStorage.ResetSuperProperties();
+            KibotuStorage.ResetSuperProperties();
         }
 
         /// <summary>
@@ -216,9 +216,9 @@ namespace mixpanel
         public static void StartTimedEvent(string eventName)
         {
             if (!IsInitialized()) return;
-            Value properties = MixpanelStorage.TimedEvents;
+            Value properties = KibotuStorage.TimedEvents;
             properties[eventName] = Util.CurrentTimeInSeconds();
-            MixpanelStorage.TimedEvents = properties;
+            KibotuStorage.TimedEvents = properties;
         }
 
         /// <summary>
@@ -229,11 +229,11 @@ namespace mixpanel
         public static void StartTimedEventOnce(string eventName)
         {
             if (!IsInitialized()) return;
-            if (!MixpanelStorage.TimedEvents.ContainsKey(eventName))
+            if (!KibotuStorage.TimedEvents.ContainsKey(eventName))
             {
-                Value properties = MixpanelStorage.TimedEvents;
+                Value properties = KibotuStorage.TimedEvents;
                 properties[eventName] = Util.CurrentTimeInSeconds();
-                MixpanelStorage.TimedEvents = properties;
+                KibotuStorage.TimedEvents = properties;
             }
         }
 
@@ -280,9 +280,9 @@ namespace mixpanel
         public static void Unregister(string key)
         {
             if (!IsInitialized()) return;
-            Value properties = MixpanelStorage.SuperProperties;
+            Value properties = KibotuStorage.SuperProperties;
             properties.Remove(key);
-            MixpanelStorage.SuperProperties = properties;
+            KibotuStorage.SuperProperties = properties;
         }
 
         /// <summary>
@@ -300,8 +300,8 @@ namespace mixpanel
         public static void SetToken(string token)
         {
             if (!IsInitialized()) return;
-            MixpanelSettings.Instance.DebugToken = token;
-            MixpanelSettings.Instance.RuntimeToken = token;
+            KibotuSettings.Instance.DebugToken = token;
+            KibotuSettings.Instance.RuntimeToken = token;
         }
 
         /// <summary>

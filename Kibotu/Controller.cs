@@ -32,7 +32,7 @@ namespace kibotu
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void InitializeBeforeSceneLoad()
         {
-            MixpanelSettings.LoadSettings();
+            KibotuSettings.LoadSettings();
             if (Config.ManualInitialization) return;
             Initialize();
         }
@@ -47,7 +47,7 @@ namespace kibotu
 
         internal static void Initialize() {
             // Copy over any runtime changes that happened before initialization from settings instance to the config.
-            MixpanelSettings.Instance.ApplyToConfig();
+            KibotuSettings.Instance.ApplyToConfig();
             GetInstance();
         }
 
@@ -76,7 +76,7 @@ namespace kibotu
 
         void OnDestroy()
         {
-            Mixpanel.Log($"Mixpanel Component Destroyed");
+            Kibotu.Log($"Mixpanel Component Destroyed");
         }
 
         void OnApplicationPause(bool pauseStatus)
@@ -92,41 +92,41 @@ namespace kibotu
             MigrateFrom1To2();
             MixpanelTracking();
             CheckForMixpanelImplemented();
-            Mixpanel.Log($"Mixpanel Component Started");
+            Kibotu.Log($"Mixpanel Component Started");
             StartCoroutine(WaitAndFlush());
         }
 
         private void MixpanelTracking()
         {
-            if (!MixpanelStorage.HasIntegratedLibrary) {
-                StartCoroutine(SendHttpEvent("Integration", "85053bf24bba75239b16a601d9387e17", MixpanelSettings.Instance.Token, "", false));
-                MixpanelStorage.HasIntegratedLibrary = true;
+            if (!KibotuStorage.HasIntegratedLibrary) {
+                StartCoroutine(SendHttpEvent("Integration", "85053bf24bba75239b16a601d9387e17", KibotuSettings.Instance.Token, "", false));
+                KibotuStorage.HasIntegratedLibrary = true;
             }
             if (Debug.isDebugBuild) {
-                StartCoroutine(SendHttpEvent("SDK Debug Launch", "metrics-1", MixpanelSettings.Instance.Token, $",\"Debug Launch Count\":{MixpanelStorage.MPDebugInitCount}", true));
+                StartCoroutine(SendHttpEvent("SDK Debug Launch", "metrics-1", KibotuSettings.Instance.Token, $",\"Debug Launch Count\":{KibotuStorage.MPDebugInitCount}", true));
             }
         }
 
         private void CheckForMixpanelImplemented()
         {
-            if (MixpanelStorage.HasImplemented) {
+            if (KibotuStorage.HasImplemented) {
                 return;
             }
 
             int implementedScore = 0;
-            implementedScore += MixpanelStorage.HasTracked ? 1 : 0;
-            implementedScore += MixpanelStorage.HasIdendified ? 1 : 0;
-            implementedScore += MixpanelStorage.HasAliased ? 1 : 0;
-            implementedScore += MixpanelStorage.HasUsedPeople ? 1 : 0;
+            implementedScore += KibotuStorage.HasTracked ? 1 : 0;
+            implementedScore += KibotuStorage.HasIdendified ? 1 : 0;
+            implementedScore += KibotuStorage.HasAliased ? 1 : 0;
+            implementedScore += KibotuStorage.HasUsedPeople ? 1 : 0;
             
             if (implementedScore >= 3) {
-                MixpanelStorage.HasImplemented = true;
+                KibotuStorage.HasImplemented = true;
 
-                StartCoroutine(SendHttpEvent("SDK Implemented", "metrics-1", MixpanelSettings.Instance.Token, 
-                    $",\"Tracked\":{MixpanelStorage.HasTracked.ToString().ToLower()}" +
-                    $",\"Identified\":{MixpanelStorage.HasIdendified.ToString().ToLower()}" +
-                    $",\"Aliased\":{MixpanelStorage.HasAliased.ToString().ToLower()}" +
-                    $",\"Used People\":{MixpanelStorage.HasUsedPeople.ToString().ToLower()}",
+                StartCoroutine(SendHttpEvent("SDK Implemented", "metrics-1", KibotuSettings.Instance.Token, 
+                    $",\"Tracked\":{KibotuStorage.HasTracked.ToString().ToLower()}" +
+                    $",\"Identified\":{KibotuStorage.HasIdendified.ToString().ToLower()}" +
+                    $",\"Aliased\":{KibotuStorage.HasAliased.ToString().ToLower()}" +
+                    $",\"Used People\":{KibotuStorage.HasUsedPeople.ToString().ToLower()}",
                     true
                 ));
             }
@@ -143,23 +143,23 @@ namespace kibotu
 
         internal void DoFlush()
         {
-            StartCoroutine(SendData(MixpanelStorage.FlushType.EVENTS));
-            StartCoroutine(SendData(MixpanelStorage.FlushType.PEOPLE));
+            StartCoroutine(SendData(KibotuStorage.FlushType.EVENTS));
+            StartCoroutine(SendData(KibotuStorage.FlushType.PEOPLE));
         }
 
-        private IEnumerator SendData(MixpanelStorage.FlushType flushType)
+        private IEnumerator SendData(KibotuStorage.FlushType flushType)
         {
             if (_retryTime > DateTime.Now && _retryCount > 0) {
                 yield break;
             }
 
-            string url = (flushType == MixpanelStorage.FlushType.EVENTS) ? Config.TrackUrl : Config.EngageUrl;
-            Value batch = MixpanelStorage.DequeueBatchTrackingData(flushType, Config.BatchSize);
+            string url = (flushType == KibotuStorage.FlushType.EVENTS) ? Config.TrackUrl : Config.EngageUrl;
+            Value batch = KibotuStorage.DequeueBatchTrackingData(flushType, Config.BatchSize);
             while (batch.Count > 0) {
                 WWWForm form = new WWWForm();
                 String payload = batch.ToString();
                 form.AddField("data", payload);
-                Mixpanel.Log("Sending batch of data: " + payload);
+                Kibotu.Log("Sending batch of data: " + payload);
                 using (UnityWebRequest request = UnityWebRequest.Post(url, form))
                 {
                     yield return request.SendWebRequest();
@@ -169,21 +169,21 @@ namespace kibotu
                     if (request.isHttpError || request.isNetworkError)
                     #endif
                     {
-                        Mixpanel.Log("API request to " + url + "has failed with reason " + request.error);
+                        Kibotu.Log("API request to " + url + "has failed with reason " + request.error);
                         _retryCount += 1;
                         double retryIn = Math.Pow(2, _retryCount - 1) * 60;
                         retryIn = Math.Min(retryIn, 10 * 60); // limit 10 min
                         _retryTime = DateTime.Now;
                         _retryTime = _retryTime.AddSeconds(retryIn);
-                        Mixpanel.Log("Retrying request in " + retryIn + " seconds (retryCount=" + _retryCount + ")");
+                        Kibotu.Log("Retrying request in " + retryIn + " seconds (retryCount=" + _retryCount + ")");
                         yield break;
                     }
                     else
                     {
                          _retryCount = 0;
-                        MixpanelStorage.DeleteBatchTrackingData(batch);
-                        batch = MixpanelStorage.DequeueBatchTrackingData(flushType, Config.BatchSize);
-                        Mixpanel.Log("Successfully posted to " + url);
+                        KibotuStorage.DeleteBatchTrackingData(batch);
+                        batch = KibotuStorage.DequeueBatchTrackingData(flushType, Config.BatchSize);
+                        Kibotu.Log("Successfully posted to " + url);
                     }
                 }
             }
@@ -193,7 +193,7 @@ namespace kibotu
         {
             string body = "{\"event\":\"" + eventName + "\",\"properties\":{\"token\":\"" + 
                         apiToken + "\",\"DevX\":true,\"mp_lib\":\"unity\"," + 
-                        "\"$lib_version\":\"" + Mixpanel.MixpanelUnityVersion + "\"," +
+                        "\"$lib_version\":\"" + Kibotu.MixpanelUnityVersion + "\"," +
                         "\"Project Token\":\"" + distinctId + "\",\"distinct_id\":\"" + distinctId + "\"" + properties + "}}";
             string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(body));
             WWWForm form = new WWWForm();
@@ -221,7 +221,7 @@ namespace kibotu
         #region InternalSDK
 
         private void MigrateFrom1To2() {
-            if (!MixpanelStorage.HasMigratedFrom1To2)
+            if (!KibotuStorage.HasMigratedFrom1To2)
             {
                 string stateFile = Application.persistentDataPath + "/mp_state.json";
                 try
@@ -234,25 +234,25 @@ namespace kibotu
                         if (stateValue.ContainsKey(distinctIdKey) && !stateValue[distinctIdKey].IsNull)
                         {
                             string distinctId = stateValue[distinctIdKey];
-                            MixpanelStorage.DistinctId = distinctId;
+                            KibotuStorage.DistinctId = distinctId;
                         }
                         string optedOutKey = "opted_out";
                         if (stateValue.ContainsKey(optedOutKey) && !stateValue[optedOutKey].IsNull)
                         {
                             bool optedOut = stateValue[optedOutKey];
-                            MixpanelStorage.IsTracking = !optedOut;
+                            KibotuStorage.IsTracking = !optedOut;
                         }
                         string trackedIntegrationKey = "tracked_integration";
                         if (stateValue.ContainsKey(trackedIntegrationKey) && !stateValue[trackedIntegrationKey].IsNull)
                         {
                             bool trackedIntegration = stateValue[trackedIntegrationKey];
-                            MixpanelStorage.HasIntegratedLibrary = trackedIntegration;
+                            KibotuStorage.HasIntegratedLibrary = trackedIntegration;
                         }
                     }
                 }
                 catch (Exception)
                 {
-                    Mixpanel.LogError("Error migrating state from v1 to v2");
+                    Kibotu.LogError("Error migrating state from v1 to v2");
                 }
                 finally
                 {
@@ -270,21 +270,21 @@ namespace kibotu
                         {
                             if (!kvp.Key.StartsWith("$"))
                             {
-                                Mixpanel.Register(kvp.Key, kvp.Value);
+                                Kibotu.Register(kvp.Key, kvp.Value);
                             }
                         }
                     }
                 }
                 catch (Exception)
                 {
-                    Mixpanel.LogError("Error migrating super properties from v1 to v2");
+                    Kibotu.LogError("Error migrating super properties from v1 to v2");
                 }
                 finally
                 {
                     System.IO.File.Delete(superPropertiesFile);
                 }
 
-                MixpanelStorage.HasMigratedFrom1To2 = true;
+                KibotuStorage.HasMigratedFrom1To2 = true;
             }
         }
 
@@ -292,18 +292,18 @@ namespace kibotu
             if (_autoEngageProperties == null) {
                 Value properties = new Value();
                     #if UNITY_IOS
-                        properties["$ios_lib_version"] = Mixpanel.MixpanelUnityVersion;
+                        properties["$ios_lib_version"] = Kibotu.MixpanelUnityVersion;
                         properties["$ios_version"] = Device.systemVersion;
                         properties["$ios_app_release"] = Application.version;
                         properties["$ios_device_model"] = SystemInfo.deviceModel;
                     #elif UNITY_ANDROID
-                        properties["$android_lib_version"] = Mixpanel.MixpanelUnityVersion;
+                        properties["$android_lib_version"] = Kibotu.MixpanelUnityVersion;
                         properties["$android_os"] = "Android";
                         properties["$android_os_version"] = SystemInfo.operatingSystem;
                         properties["$android_model"] = SystemInfo.deviceModel;
                         properties["$android_app_version"] = Application.version;
                     #else
-                        properties["$lib_version"] = Mixpanel.MixpanelUnityVersion;
+                        properties["$lib_version"] = Kibotu.MixpanelUnityVersion;
                     #endif
                 _autoEngageProperties = properties;
             }
@@ -316,7 +316,7 @@ namespace kibotu
                 Value properties = new Value
                 {
                     {"mp_lib", "unity"},
-                    {"$lib_version", Mixpanel.MixpanelUnityVersion},
+                    {"$lib_version", Kibotu.MixpanelUnityVersion},
                     {"$os", SystemInfo.operatingSystemFamily.ToString()},
                     {"$os_version", SystemInfo.operatingSystem},
                     {"$model", SystemInfo.deviceModel},
@@ -341,23 +341,23 @@ namespace kibotu
 
         internal static void DoTrack(string eventName, Value properties)
         {
-            if (!MixpanelStorage.IsTracking) return;
+            if (!KibotuStorage.IsTracking) return;
             if (properties == null) properties = new Value();
             properties.Merge(GetEventsDefaultProperties());
             // These auto properties can change in runtime so we don't bake them into AutoProperties
             properties["$screen_width"] = Screen.width;
             properties["$screen_height"] = Screen.height;
-            properties.Merge(MixpanelStorage.OnceProperties);
-            MixpanelStorage.ResetOnceProperties();
-            properties.Merge(MixpanelStorage.SuperProperties);
+            properties.Merge(KibotuStorage.OnceProperties);
+            KibotuStorage.ResetOnceProperties();
+            properties.Merge(KibotuStorage.SuperProperties);
             Value startTime;
-            if (MixpanelStorage.TimedEvents.TryGetValue(eventName, out startTime))
+            if (KibotuStorage.TimedEvents.TryGetValue(eventName, out startTime))
             {
                 properties["$duration"] = Util.CurrentTimeInSeconds() - (double)startTime;
-                MixpanelStorage.TimedEvents.Remove(eventName);
+                KibotuStorage.TimedEvents.Remove(eventName);
             }
-            properties["token"] = MixpanelSettings.Instance.Token;
-            properties["distinct_id"] = MixpanelStorage.DistinctId;
+            properties["token"] = KibotuSettings.Instance.Token;
+            properties["distinct_id"] = KibotuStorage.DistinctId;
             properties["time"] = Util.CurrentTimeInMilliseconds();
 
             Value data = new Value();
@@ -367,30 +367,30 @@ namespace kibotu
             data["$mp_metadata"] = Metadata.GetEventMetadata();
 
             if (Debug.isDebugBuild && !eventName.StartsWith("$")) {
-                MixpanelStorage.HasTracked = true;
+                KibotuStorage.HasTracked = true;
             }
 
-            MixpanelStorage.EnqueueTrackingData(data, MixpanelStorage.FlushType.EVENTS);
+            KibotuStorage.EnqueueTrackingData(data, KibotuStorage.FlushType.EVENTS);
         }
 
         internal static void DoEngage(Value properties)
         {
-            if (!MixpanelStorage.IsTracking) return;
-            properties["$token"] = MixpanelSettings.Instance.Token;
-            properties["$distinct_id"] = MixpanelStorage.DistinctId;
+            if (!KibotuStorage.IsTracking) return;
+            properties["$token"] = KibotuSettings.Instance.Token;
+            properties["$distinct_id"] = KibotuStorage.DistinctId;
             properties["$time"] = Util.CurrentTimeInMilliseconds();
             properties["$mp_metadata"] = Metadata.GetPeopleMetadata();
 
-            MixpanelStorage.EnqueueTrackingData(properties, MixpanelStorage.FlushType.PEOPLE);
+            KibotuStorage.EnqueueTrackingData(properties, KibotuStorage.FlushType.PEOPLE);
             if (Debug.isDebugBuild) {
-                MixpanelStorage.HasUsedPeople = true;
+                KibotuStorage.HasUsedPeople = true;
             }
         }
 
         internal static void DoClear()
         {
-            MixpanelStorage.DeleteAllTrackingData(MixpanelStorage.FlushType.EVENTS);
-            MixpanelStorage.DeleteAllTrackingData(MixpanelStorage.FlushType.PEOPLE);
+            KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.EVENTS);
+            KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.PEOPLE);
         }
 
         #endregion

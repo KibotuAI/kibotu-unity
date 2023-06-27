@@ -1,7 +1,7 @@
 {
-    "name": "Kiobtu.Editor",
+    "name": "Kibotu.Editor",
     "references": [
-        "Kiobtu"
+        "Kibotu"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

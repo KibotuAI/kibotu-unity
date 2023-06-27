@@ -14,7 +14,7 @@ using Unity.Collections;
 
 namespace kibotu
 {
-    public static class MixpanelStorage
+    public static class KibotuStorage
     {
         #region Preferences
         private static IPreferences PreferencesSource = new PlayerPreferences();
@@ -232,7 +232,7 @@ namespace kibotu
                         batch.Add(JsonUtility.FromJson<Value>(PreferencesSource.GetString(trackingKey)));
                     }
                     catch (Exception e) {
-                        Mixpanel.LogError($"There was an error processing '{trackingKey}' from the internal object pool: " + e);
+                        Kibotu.LogError($"There was an error processing '{trackingKey}' from the internal object pool: " + e);
                         PreferencesSource.DeleteKey(trackingKey);
 
                         if (batch.Count == 0) {
