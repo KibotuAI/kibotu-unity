@@ -195,7 +195,7 @@ namespace kibotu
         private IEnumerator SendHttpEvent(string eventName, string apiToken, string distinctId, string properties, bool updatePeople)
         {
             // TODO for when we have more customers
-            return;
+            yield break;
             
             string json = "{\"event\":\"" + eventName + "\",\"properties\":{\"token\":\"" + 
                         apiToken + "\",\"DevX\":true,\"mp_lib\":\"unity\"," + 

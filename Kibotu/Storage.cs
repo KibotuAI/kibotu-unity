@@ -28,7 +28,7 @@ namespace kibotu
 
         #region HasMigratedFrom1To2
 
-        private const string HasMigratedFrom1To2Name = "Mixpanel.HasMigratedFrom1To2";
+        private const string HasMigratedFrom1To2Name = "Kibotu.HasMigratedFrom1To2";
 
         internal static bool HasMigratedFrom1To2
         {
@@ -40,7 +40,7 @@ namespace kibotu
 
         #region HasIntegratedLibrary
 
-        private const string HasIntegratedLibraryName = "Mixpanel.HasIntegratedLibrary";
+        private const string HasIntegratedLibraryName = "Kibotu.HasIntegratedLibrary";
 
         internal static bool HasIntegratedLibrary
         {
@@ -52,7 +52,7 @@ namespace kibotu
 
         #region MPDebugInitCount
 
-        private const string MPDebugInitCountName = "Mixpanel.MPDebugInitCount";
+        private const string MPDebugInitCountName = "Kibotu.MPDebugInitCount";
 
         internal static int MPDebugInitCount
         {
@@ -64,7 +64,7 @@ namespace kibotu
 
         #region HasImplemented
 
-        private const string HasImplementedName = "Mixpanel.HasImplemented";
+        private const string HasImplementedName = "Kibotu.HasImplemented";
 
         internal static bool HasImplemented
         {
@@ -76,7 +76,7 @@ namespace kibotu
 
         #region HasTracked
 
-        private const string HasTrackedName = "Mixpanel.HasTracked";
+        private const string HasTrackedName = "Kibotu.HasTracked";
 
         internal static bool HasTracked
         {
@@ -88,7 +88,7 @@ namespace kibotu
 
         #region HasIdentified
 
-        private const string HasIdentifiedName = "Mixpanel.HasIdentified";
+        private const string HasIdentifiedName = "Kibotu.HasIdentified";
 
         internal static bool HasIdendified
         {
@@ -100,7 +100,7 @@ namespace kibotu
 
         #region HasAliased
 
-        private const string HasAliasedName = "Mixpanel.HasAliased";
+        private const string HasAliasedName = "Kibotu.HasAliased";
 
         internal static bool HasAliased
         {
@@ -112,7 +112,7 @@ namespace kibotu
 
         #region HasUsedPeople
 
-        private const string HasUsedPeopleName = "Mixpanel.HasUsedPeople";
+        private const string HasUsedPeopleName = "Kibotu.HasUsedPeople";
 
         internal static bool HasUsedPeople
         {
@@ -124,7 +124,7 @@ namespace kibotu
 
         #region HasTrackedFirstSDKDebugLaunch
 
-        private const string HasTrackedFirstSDKDebugLaunchName = "Mixpanel.HasTrackedFirstSDKDebugLaunch";
+        private const string HasTrackedFirstSDKDebugLaunchName = "Kibotu.HasTrackedFirstSDKDebugLaunch";
 
         internal static bool HasTrackedFirstSDKDebugLaunch
         {
@@ -136,7 +136,7 @@ namespace kibotu
 
         #region DistinctId
         
-        private const string DistinctIdName = "Mixpanel.DistinctId";
+        private const string DistinctIdName = "Kibotu.DistinctId";
         
         private static string _distinctId;
         
@@ -165,13 +165,16 @@ namespace kibotu
 
         #region Track
 
-        private const string EventAutoIncrementingIdName = "EventAutoIncrementingID";
-        private const string PeopleAutoIncrementingIdName = "PeopleAutoIncrementingID";
+        private const string EventAutoIncrementingIdName = "Kibotu.EventAutoIncrementingID";
+        private const string PeopleAutoIncrementingIdName = "Kibotu.PeopleAutoIncrementingID";
 
         // For performance, we can store the lowest unsent event ID to prevent searching from 0.
         // This search process can be slow if the auto-increment ID gets large enough.
-        private const string EventStartIndexName = "EventStartIndex";
-        private const string PeopleStartIndexName = "PeopleStartIndex";
+        private const string EventStartIndexName = "Kibotu.EventStartIndex";
+        private const string PeopleStartIndexName = "Kibotu.PeopleStartIndex";
+
+        private const string EventKeyName = "Kibotu.Event";
+        private const string PeopleKeyName = "Kibotu.People";
 
         internal enum FlushType
         {
@@ -183,7 +186,7 @@ namespace kibotu
         {
             int eventId = EventAutoIncrementingID();
             int peopleId = PeopleAutoIncrementingID();
-            String trackingKey = (flushType == FlushType.EVENTS)? "Event" + eventId.ToString() : "People" + peopleId.ToString();
+            String trackingKey = (flushType == FlushType.EVENTS)? EventKeyName + eventId.ToString() : PeopleKeyName + peopleId.ToString();
             data["id"] = trackingKey;
             PreferencesSource.SetString(trackingKey, JsonUtility.ToJson(data));
             IncreaseTrackingDataID(flushType);
@@ -226,7 +229,7 @@ namespace kibotu
             int dataIndex = oldStartIndex;
             int maxIndex = (flushType == FlushType.EVENTS) ? EventAutoIncrementingID() - 1 : PeopleAutoIncrementingID() - 1;
             while (batch.Count < batchSize && dataIndex <= maxIndex) {
-                String trackingKey = (flushType == FlushType.EVENTS) ? "Event" + dataIndex.ToString() : "People" + dataIndex.ToString();
+                String trackingKey = (flushType == FlushType.EVENTS) ? EventKeyName + dataIndex.ToString() : PeopleKeyName + dataIndex.ToString();
                 if (PreferencesSource.HasKey(trackingKey)) {
                     try {
                         batch.Add(JsonUtility.FromJson<Value>(PreferencesSource.GetString(trackingKey)));
@@ -264,7 +267,7 @@ namespace kibotu
             int dataIndex = oldStartIndex;
             int maxIndex = (flushType == FlushType.EVENTS) ? EventAutoIncrementingID() - 1 : PeopleAutoIncrementingID() - 1;
             while (deletedCount < batchSize && dataIndex <= maxIndex) {
-                String trackingKey = (flushType == FlushType.EVENTS) ? "Event" + dataIndex.ToString() : "People" + dataIndex.ToString();    
+                String trackingKey = (flushType == FlushType.EVENTS) ? EventKeyName + dataIndex.ToString() : PeopleKeyName + dataIndex.ToString();    
                 if (PreferencesSource.HasKey(trackingKey)) {
                     PreferencesSource.DeleteKey(trackingKey);
                     deletedCount++;
@@ -306,7 +309,7 @@ namespace kibotu
 
         #region IsTracking
 
-        private const string IsTrackingName = "Mixpanel.IsTracking";
+        private const string IsTrackingName = "Kibotu.IsTracking";
         
         private static bool _isTracking;
 
@@ -329,7 +332,7 @@ namespace kibotu
         
         #region OnceProperties
         
-        private const string OncePropertiesName = "Mixpanel.OnceProperties";
+        private const string OncePropertiesName = "Kibotu.OnceProperties";
 
         private static Value _onceProperties;
 
@@ -364,7 +367,7 @@ namespace kibotu
         
         #region SuperProperties
         
-        private const string SuperPropertiesName = "Mixpanel.SuperProperties";
+        private const string SuperPropertiesName = "Kibotu.SuperProperties";
 
         private static Value _superProperties;
 
@@ -399,7 +402,7 @@ namespace kibotu
         
         #region TimedEvents
         
-        private const string TimedEventsName = "Mixpanel.TimedEvents";
+        private const string TimedEventsName = "Kibotu.TimedEvents";
 
         private static Value _timedEvents;
 
