@@ -65,7 +65,7 @@ namespace kibotu
         {
             if (_instance == null)
             {
-                GameObject g = new GameObject ("Mixpanel");
+                GameObject g = new GameObject ("Kibotu");
                 _instance = g.AddComponent<Controller>();
                 DontDestroyOnLoad(g);
             }
@@ -76,7 +76,7 @@ namespace kibotu
 
         void OnDestroy()
         {
-            Kibotu.Log($"Mixpanel Component Destroyed");
+            Kibotu.Log($"Kibotu Component Destroyed");
         }
 
         void OnApplicationPause(bool pauseStatus)
@@ -90,13 +90,13 @@ namespace kibotu
         private void Start()
         {
             MigrateFrom1To2();
-            MixpanelTracking();
-            CheckForMixpanelImplemented();
-            Kibotu.Log($"Mixpanel Component Started");
+            KibotuTracking();
+            CheckForKibotuImplemented();
+            Kibotu.Log($"Kibotu Component Started");
             StartCoroutine(WaitAndFlush());
         }
 
-        private void MixpanelTracking()
+        private void KibotuTracking()
         {
             if (!KibotuStorage.HasIntegratedLibrary) {
                 StartCoroutine(SendHttpEvent("Integration", "85053bf24bba75239b16a601d9387e17", KibotuSettings.Instance.Token, "", false));
@@ -107,7 +107,7 @@ namespace kibotu
             }
         }
 
-        private void CheckForMixpanelImplemented()
+        private void CheckForKibotuImplemented()
         {
             if (KibotuStorage.HasImplemented) {
                 return;
@@ -156,13 +156,16 @@ namespace kibotu
             string url = (flushType == KibotuStorage.FlushType.EVENTS) ? Config.TrackUrl : Config.EngageUrl;
             Value batch = KibotuStorage.DequeueBatchTrackingData(flushType, Config.BatchSize);
             while (batch.Count > 0) {
-                WWWForm form = new WWWForm();
                 String payload = batch.ToString();
-                form.AddField("data", payload);
                 Kibotu.Log("Sending batch of data: " + payload);
-                using (UnityWebRequest request = UnityWebRequest.Post(url, form))
+                using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
                 {
+                    var bytes = Encoding.UTF8.GetBytes(payload);
+                    request.uploadHandler = new UploadHandlerRaw(bytes);
+                    request.SetRequestHeader("Content-Type", "application/json");
+                    request.SetRequestHeader("Authorization", KibotuSettings.Instance.Token);
                     yield return request.SendWebRequest();
+                    
                     #if UNITY_2020_1_OR_NEWER
                     if (request.result != UnityWebRequest.Result.Success)
                     #else
@@ -191,29 +194,41 @@ namespace kibotu
 
         private IEnumerator SendHttpEvent(string eventName, string apiToken, string distinctId, string properties, bool updatePeople)
         {
-            string body = "{\"event\":\"" + eventName + "\",\"properties\":{\"token\":\"" + 
+            // TODO for when we have more customers
+            return;
+            
+            string json = "{\"event\":\"" + eventName + "\",\"properties\":{\"token\":\"" + 
                         apiToken + "\",\"DevX\":true,\"mp_lib\":\"unity\"," + 
-                        "\"$lib_version\":\"" + Kibotu.MixpanelUnityVersion + "\"," +
-                        "\"Project Token\":\"" + distinctId + "\",\"distinct_id\":\"" + distinctId + "\"" + properties + "}}";
-            string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(body));
-            WWWForm form = new WWWForm();
-            form.AddField("data", payload);
-              
-            using (UnityWebRequest request = UnityWebRequest.Post(Config.TrackUrl, form)) {
-                yield return request.SendWebRequest();
+                        "\"$lib_version\":\"" + Kibotu.KibotuUnityVersion + "\"," +
+                        "\"Project Token\":\"" + distinctId + "\",\"distinct_id\":\"" + distinctId + "\"" + 
+                        properties + "}}";
+            
+            using (UnityWebRequest request = new UnityWebRequest(Config.TrackUrl, UnityWebRequest.kHttpVerbPOST)) {
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var bytes = Encoding.UTF8.GetBytes(json);
+                    request.uploadHandler = new UploadHandlerRaw(bytes);
+                    request.SetRequestHeader("Content-Type", "application/json");
+                    request.SetRequestHeader("Authorization", distinctId);
+                    yield return request.SendWebRequest();
+                }
             }
 
             if (updatePeople) {
-                body = "{\"$add\":" + "{\"" + eventName + 
+                json = "{\"$add\":" + "{\"" + eventName + 
                 "\":1}," + 
                             "\"$token\":\"" + apiToken + "\"," +
                             "\"$distinct_id\":\"" + distinctId + "\"}";
-                payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(body));
-                form = new WWWForm();
-                form.AddField("data", payload);
                 
-                using (UnityWebRequest request = UnityWebRequest.Post(Config.EngageUrl, form)) {
-                    yield return request.SendWebRequest();
+                using (UnityWebRequest request = new UnityWebRequest(Config.EngageUrl, UnityWebRequest.kHttpVerbPOST)) {
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(json);
+                        request.uploadHandler = new UploadHandlerRaw(bytes);
+                        request.SetRequestHeader("Content-Type", "application/json");
+                        request.SetRequestHeader("Authorization", distinctId);
+                        yield return request.SendWebRequest();
+                    }
                 }
             }
         }
@@ -292,18 +307,18 @@ namespace kibotu
             if (_autoEngageProperties == null) {
                 Value properties = new Value();
                     #if UNITY_IOS
-                        properties["$ios_lib_version"] = Kibotu.MixpanelUnityVersion;
+                        properties["$ios_lib_version"] = Kibotu.KibotuUnityVersion;
                         properties["$ios_version"] = Device.systemVersion;
                         properties["$ios_app_release"] = Application.version;
                         properties["$ios_device_model"] = SystemInfo.deviceModel;
                     #elif UNITY_ANDROID
-                        properties["$android_lib_version"] = Kibotu.MixpanelUnityVersion;
+                        properties["$android_lib_version"] = Kibotu.KibotuUnityVersion;
                         properties["$android_os"] = "Android";
                         properties["$android_os_version"] = SystemInfo.operatingSystem;
                         properties["$android_model"] = SystemInfo.deviceModel;
                         properties["$android_app_version"] = Application.version;
                     #else
-                        properties["$lib_version"] = Kibotu.MixpanelUnityVersion;
+                        properties["$lib_version"] = Kibotu.KibotuUnityVersion;
                     #endif
                 _autoEngageProperties = properties;
             }
@@ -316,7 +331,7 @@ namespace kibotu
                 Value properties = new Value
                 {
                     {"mp_lib", "unity"},
-                    {"$lib_version", Kibotu.MixpanelUnityVersion},
+                    {"$lib_version", Kibotu.KibotuUnityVersion},
                     {"$os", SystemInfo.operatingSystemFamily.ToString()},
                     {"$os_version", SystemInfo.operatingSystem},
                     {"$model", SystemInfo.deviceModel},
@@ -356,7 +371,7 @@ namespace kibotu
                 properties["$duration"] = Util.CurrentTimeInSeconds() - (double)startTime;
                 KibotuStorage.TimedEvents.Remove(eventName);
             }
-            properties["token"] = KibotuSettings.Instance.Token;
+            // properties["token"] = KibotuSettings.Instance.Token;
             properties["distinct_id"] = KibotuStorage.DistinctId;
             properties["time"] = Util.CurrentTimeInMilliseconds();
 

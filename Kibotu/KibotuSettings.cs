@@ -10,8 +10,8 @@ namespace kibotu
 {
     public class KibotuSettings : ScriptableObject
     {
-        private const string TrackUrlTemplate = "{0}track/?ip=1";
-        private const string EngageUrlTemplate = "{0}engage/?ip=1";
+        private const string TrackUrlTemplate = "{0}track";
+        private const string EngageUrlTemplate = "{0}engage";
         
         //TODO: Convert to log level
         [Tooltip("If true will print helpful debugging messages")] 
@@ -19,8 +19,8 @@ namespace kibotu
         [Tooltip("If true, you need to manually initialize the library")]
         public bool ManualInitialization;
         [Tooltip("The api host of where to send the requests to. Useful when you need to proxy all the request to somewhere else.'")]
-        public string APIHostAddress = "https://api.mixpanel.com/";
-        [Tooltip("The token of the Mixpanel project.")]
+        public string APIHostAddress = "https://api.kibotu.ai/";
+        [Tooltip("The token of the Kibotu project.")]
         public string RuntimeToken = "";
         [Tooltip("Used when the DEBUG compile flag is set or when in the editor. Useful if you want to use different tokens for test builds.")]
         public string DebugToken = "";
@@ -69,10 +69,10 @@ namespace kibotu
         private static KibotuSettings FindOrCreateInstance()
         {
             KibotuSettings instance = null;
-            instance = instance ? null : Resources.Load<KibotuSettings>("Mixpanel");
+            instance = instance ? null : Resources.Load<KibotuSettings>("Kibotu");
             instance = instance ? instance : Resources.LoadAll<KibotuSettings>(string.Empty).FirstOrDefault();
             instance = instance ? instance : CreateAndSave<KibotuSettings>();
-            if (instance == null) throw new Exception("Could not find or create settings for Mixpanel");
+            if (instance == null) throw new Exception("Could not find or create settings for Kibotu");
             return instance;
         }
 
@@ -102,7 +102,7 @@ namespace kibotu
             {
                 Directory.CreateDirectory(dirName);
             }
-            AssetDatabase.CreateAsset(obj, "Assets/Resources/Mixpanel.asset");
+            AssetDatabase.CreateAsset(obj, "Assets/Resources/Kibotu.asset");
             AssetDatabase.SaveAssets();
         }
 #endif

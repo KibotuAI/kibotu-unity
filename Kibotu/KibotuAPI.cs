@@ -3,25 +3,25 @@ using System;
 namespace kibotu
 {
     /// <summary>
-    /// Core class for interacting with %Mixpanel Analytics.
+    /// Core class for interacting with %Kibotu Analytics.
     /// </summary>
     /// <description>
     /// <p>Open unity project settings and set the properties in the unity inspector (token, debug token, etc.)</p>
-    /// <p>Once you have the mixpanel settings setup, you can track events by using <c>Mixpanel.Track(string eventName)</c>.
-    /// You can also update %People Analytics records with Mixpanel.people. </p>
+    /// <p>Once you have the Kibotu settings setup, you can track events by using <c>Kibotu.Track(string eventName)</c>.
+    /// You can also update %People Analytics records with Kibotu.people. </p>
     /// </description>
     /// <code>
-    ///        //Track an event in Mixpanel Engagement<br/>
-    ///        Mixpanel.Track("Hello World");<br/>
-    ///        Mixpanel.Identify("CURRENT USER DISTINCT ID");<br/>
-    ///        Mixpanel.People.Set("Plan", "Premium");<br/>
+    ///        //Track an event in Kibotu Engagement<br/>
+    ///        Kibotu.Track("Hello World");<br/>
+    ///        Kibotu.Identify("CURRENT USER DISTINCT ID");<br/>
+    ///        Kibotu.People.Set("Plan", "Premium");<br/>
     /// </code>
     public static partial class Kibotu
     {
-        internal const string MixpanelUnityVersion = "3.4.0";
+        internal const string KibotuUnityVersion = "0.9.0";
 
         /// <summary>
-        /// Creates an Mixpanel instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
+        /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
         /// Do not forget to call Disable() when you want to dispose your object.
         /// </summary>
         public static void Init()
@@ -30,19 +30,19 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Checks whether Mixpanel is initialized or not. If it is not, every API will be no-op.
+        /// Checks whether Kibotu is initialized or not. If it is not, every API will be no-op.
         /// </summary>
         public static bool IsInitialized()
         {
             bool initialized = Controller.IsInitialized();
             if (!initialized) {
-                Kibotu.Log("Mixpanel is not initialized");
+                Kibotu.Log("Kibotu is not initialized");
             }
             return initialized;
         }
 
         /// <summary>
-        /// By default, Mixpanel uses PlayerPreferences for data persistence. However you can call this method to
+        /// By default, Kibotu uses PlayerPreferences for data persistence. However you can call this method to
         /// set the data persistence of your choice as long as it follows IPeferences
         /// </summary>
         /// <param name="preferences">the new distinct_id that should represent original</param>
@@ -90,7 +90,7 @@ namespace kibotu
         /// <summary>
         /// Sets the distinct ID of the current user.
         /// </summary>
-        /// <param name="uniqueId">a string uniquely identifying this user. Events sent to %Mixpanel
+        /// <param name="uniqueId">a string uniquely identifying this user. Events sent to %Kibotu
         /// using the same distinct_id will be considered associated with the same visitor/customer for
         /// retention and funnel reporting, so be sure that the given value is globally unique for each
         /// individual user you intend to track.
@@ -190,7 +190,7 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Clears all items from the Track and Engage request queues, anything not already sent to the Mixpanel
+        /// Clears all items from the Track and Engage request queues, anything not already sent to the Kibotu
         /// API will no longer be sent
         /// </summary>
         public static void Clear()
@@ -208,8 +208,8 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Start timing of an event. Calling Mixpanel.StartTimedEvent(string eventName) will not send an event,
-        /// but when you eventually call Mixpanel.Track(string eventName), your tracked event will be sent with a "$duration" property,
+        /// Start timing of an event. Calling Kibotu.StartTimedEvent(string eventName) will not send an event,
+        /// but when you eventually call Kibotu.Track(string eventName), your tracked event will be sent with a "$duration" property,
         /// representing the number of seconds between your calls.
         /// </summary>
         /// <param name="eventName">the name of the event to track with timing</param>
@@ -286,7 +286,7 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Flushes the queued data to Mixpanel
+        /// Flushes the queued data to Kibotu
         /// </summary>
         public static void Flush()
         {
@@ -305,7 +305,7 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Disables Mixpanel Component. Useful if you have "Manual Initialization" enabled under your Project Settings.
+        /// Disables Kibotu Component. Useful if you have "Manual Initialization" enabled under your Project Settings.
         /// </summary>
         public static void Disable()
         {
@@ -314,7 +314,7 @@ namespace kibotu
         }
 
         /// <summary>
-        /// Core interface for using %Mixpanel %People Analytics features. You can get an instance by calling Mixpanel.people
+        /// Core interface for using %Kibotu %People Analytics features. You can get an instance by calling Kibotu.people
         /// </summary>
         public static class People
         {
@@ -400,7 +400,7 @@ namespace kibotu
             }
 
             /// <summary>
-            /// Like Mixpanel.Set(Value properties), but will not set properties that already exist on a record.
+            /// Like Kibotu.Set(Value properties), but will not set properties that already exist on a record.
             /// </summary>
             /// <param name="properties">a JSONObject containing the collection of properties you wish to apply to the identified user. Each key in the JSONObject will be associated with a property name, and the value of that key will be assigned to the property.</param>
             public static void SetOnce(Value properties)
@@ -410,7 +410,7 @@ namespace kibotu
             }
 
             /// <summary>
-            /// Like Mixpanel.Set(string property, Value to), but will not set properties that already exist on a record.
+            /// Like Kibotu.Set(string property, Value to), but will not set properties that already exist on a record.
             /// </summary>
             /// <param name="property">property name</param>
             /// <param name="to">property value</param>
