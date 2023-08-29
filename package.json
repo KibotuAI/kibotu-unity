@@ -1,7 +1,7 @@
 {
   "name": "com.kibotu.unity",
   "displayName":  "Kibotu",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Official Kibotu library for Unity.",
   "repository": {
     "type": "git",

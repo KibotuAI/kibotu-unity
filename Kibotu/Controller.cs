@@ -307,18 +307,18 @@ namespace kibotu
             if (_autoEngageProperties == null) {
                 Value properties = new Value();
                     #if UNITY_IOS
-                        properties["$ios_lib_version"] = Kibotu.KibotuUnityVersion;
-                        properties["$ios_version"] = Device.systemVersion;
-                        properties["$ios_app_release"] = Application.version;
-                        properties["$ios_device_model"] = SystemInfo.deviceModel;
+                        properties["_kb_ios_lib_version"] = Kibotu.KibotuUnityVersion;
+                        properties["_kb_ios_version"] = Device.systemVersion;
+                        properties["_kb_ios_app_release"] = Application.version;
+                        properties["_kb_ios_device_model"] = SystemInfo.deviceModel;
                     #elif UNITY_ANDROID
-                        properties["$android_lib_version"] = Kibotu.KibotuUnityVersion;
-                        properties["$android_os"] = "Android";
-                        properties["$android_os_version"] = SystemInfo.operatingSystem;
-                        properties["$android_model"] = SystemInfo.deviceModel;
-                        properties["$android_app_version"] = Application.version;
+                        properties["_kb_android_lib_version"] = Kibotu.KibotuUnityVersion;
+                        properties["_kb_android_os"] = "Android";
+                        properties["_kb_android_os_version"] = SystemInfo.operatingSystem;
+                        properties["_kb_android_model"] = SystemInfo.deviceModel;
+                        properties["_kb_android_app_version"] = Application.version;
                     #else
-                        properties["$lib_version"] = Kibotu.KibotuUnityVersion;
+                        properties["_kb_lib_version"] = Kibotu.KibotuUnityVersion;
                     #endif
                 _autoEngageProperties = properties;
             }
@@ -330,24 +330,24 @@ namespace kibotu
             if (_autoTrackProperties == null) {
                 Value properties = new Value
                 {
-                    {"mp_lib", "unity"},
-                    {"$lib_version", Kibotu.KibotuUnityVersion},
-                    {"$os", SystemInfo.operatingSystemFamily.ToString()},
-                    {"$os_version", SystemInfo.operatingSystem},
-                    {"$model", SystemInfo.deviceModel},
-                    {"$app_version_string", Application.version},
-                    {"$wifi", Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork},
-                    {"$radio", Util.GetRadio()},
-                    {"$device", Application.platform.ToString()},
-                    {"$screen_dpi", Screen.dpi},
+                    {"_kb_lib", "unity"},
+                    {"_kb_lib_version", Kibotu.KibotuUnityVersion},
+                    {"_kb_os", SystemInfo.operatingSystemFamily.ToString()},
+                    {"_kb_os_version", SystemInfo.operatingSystem},
+                    {"_kb_model", SystemInfo.deviceModel},
+                    {"_kb_app_version_string", Application.version},
+                    {"_kb_wifi", Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork},
+                    {"_kb_radio", Util.GetRadio()},
+                    {"_kb_device", Application.platform.ToString()},
+                    {"_kb_screen_dpi", Screen.dpi},
                 };
                 #if UNITY_IOS
-                    properties["$os"] = "Apple";
-                    properties["$os_version"] = Device.systemVersion;
-                    properties["$manufacturer"] = "Apple";
+                    properties["_kb_os"] = "Apple";
+                    properties["_kb_os_version"] = Device.systemVersion;
+                    properties["_kb_manufacturer"] = "Apple";
                 #endif
                 #if UNITY_ANDROID
-                    properties["$os"] = "Android";
+                    properties["_kb_os"] = "Android";
                 #endif
                 _autoTrackProperties = properties;
             }
@@ -360,15 +360,15 @@ namespace kibotu
             if (properties == null) properties = new Value();
             properties.Merge(GetEventsDefaultProperties());
             // These auto properties can change in runtime so we don't bake them into AutoProperties
-            properties["$screen_width"] = Screen.width;
-            properties["$screen_height"] = Screen.height;
+            properties["_kb_screen_width"] = Screen.width;
+            properties["_kb_screen_height"] = Screen.height;
             properties.Merge(KibotuStorage.OnceProperties);
             KibotuStorage.ResetOnceProperties();
             properties.Merge(KibotuStorage.SuperProperties);
             Value startTime;
             if (KibotuStorage.TimedEvents.TryGetValue(eventName, out startTime))
             {
-                properties["$duration"] = Util.CurrentTimeInSeconds() - (double)startTime;
+                properties["_kb_duration"] = Util.CurrentTimeInSeconds() - (double)startTime;
                 KibotuStorage.TimedEvents.Remove(eventName);
             }
             // properties["token"] = KibotuSettings.Instance.Token;
@@ -379,7 +379,7 @@ namespace kibotu
             
             data["event"] = eventName;
             data["properties"] = properties;
-            data["$mp_metadata"] = Metadata.GetEventMetadata();
+            data["_kb_metadata"] = Metadata.GetEventMetadata();
 
             if (Debug.isDebugBuild && !eventName.StartsWith("$")) {
                 KibotuStorage.HasTracked = true;
@@ -391,10 +391,10 @@ namespace kibotu
         internal static void DoEngage(Value properties)
         {
             if (!KibotuStorage.IsTracking) return;
-            properties["$token"] = KibotuSettings.Instance.Token;
-            properties["$distinct_id"] = KibotuStorage.DistinctId;
-            properties["$time"] = Util.CurrentTimeInMilliseconds();
-            properties["$mp_metadata"] = Metadata.GetPeopleMetadata();
+            // properties["$token"] = KibotuSettings.Instance.Token;
+            properties["distinct_id"] = KibotuStorage.DistinctId;
+            properties["time"] = Util.CurrentTimeInMilliseconds();
+            properties["_kb_metadata"] = Metadata.GetPeopleMetadata();
 
             KibotuStorage.EnqueueTrackingData(properties, KibotuStorage.FlushType.PEOPLE);
             if (Debug.isDebugBuild) {
@@ -425,10 +425,10 @@ namespace kibotu
             internal static Value GetEventMetadata() {
                 Value eventMetadata = new Value
                 {
-                    {"$mp_event_id", Convert.ToString(_random.Next(0, Int32.MaxValue), 16)},
-                    {"$mp_session_id", _sessionID},
-                    {"$mp_session_seq_id", _eventCounter},
-                    {"$mp_session_start_sec", _sessionStartEpoch}
+                    {"_kb_event_id", Convert.ToString(_random.Next(0, Int32.MaxValue), 16)},
+                    {"_kb_session_id", _sessionID},
+                    {"_kb_session_seq_id", _eventCounter},
+                    {"_kb_session_start_sec", _sessionStartEpoch}
                 };
                 _eventCounter++;
                 return eventMetadata;
@@ -437,10 +437,10 @@ namespace kibotu
             internal static Value GetPeopleMetadata() {
                 Value peopleMetadata = new Value
                 {
-                    {"$mp_event_id", Convert.ToString(_random.Next(0, Int32.MaxValue), 16)},
-                    {"$mp_session_id", _sessionID},
-                    {"$mp_session_seq_id", _peopleCounter},
-                    {"$mp_session_start_sec", _sessionStartEpoch}
+                    {"_kb_event_id", Convert.ToString(_random.Next(0, Int32.MaxValue), 16)},
+                    {"_kb_session_id", _sessionID},
+                    {"_kb_session_seq_id", _peopleCounter},
+                    {"_kb_session_start_sec", _sessionStartEpoch}
                 };
                 _peopleCounter++;
                 return peopleMetadata;

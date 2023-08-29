@@ -18,7 +18,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "0.9.0";
+        internal const string KibotuUnityVersion = "0.9.1";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
@@ -61,7 +61,7 @@ namespace kibotu
             if (alias == KibotuStorage.DistinctId) return;
             Value properties = new Value();
             properties["alias"] = alias;
-            Track("$create_alias", properties);
+            Track("_kb_create_alias", properties);
             KibotuStorage.HasAliased = true;
             Flush();
         }
@@ -101,7 +101,7 @@ namespace kibotu
             if (KibotuStorage.DistinctId == uniqueId) return;
             string oldDistinctId = KibotuStorage.DistinctId;
             KibotuStorage.DistinctId = uniqueId;
-            Track("$identify", "$anon_distinct_id", oldDistinctId);
+            Track("_kb_identify", "_kb_anon_distinct_id", oldDistinctId);
             KibotuStorage.HasIdendified = true;
         }
 
@@ -133,7 +133,7 @@ namespace kibotu
         {
             if (!IsInitialized()) return;
             KibotuStorage.IsTracking = true;
-            Controller.DoTrack("$opt_in", null);
+            Controller.DoTrack("_kb_opt_in", null);
         }
 
         /// <summary>
@@ -325,7 +325,7 @@ namespace kibotu
             public static void Append(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$append", properties}});
+                Controller.DoEngage(new Value {{"_kb_append", properties}});
             }
 
             /// <summary>
@@ -343,7 +343,7 @@ namespace kibotu
             /// </summary>
             public static void ClearCharges()
             {
-                Unset("$transactions");
+                Unset("_kb_transactions");
             }
 
             /// <summary>
@@ -352,7 +352,7 @@ namespace kibotu
             public static void DeleteUser()
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$delete", ""}});
+                Controller.DoEngage(new Value {{"_kb_delete", ""}});
             }
 
             /// <summary>
@@ -362,7 +362,7 @@ namespace kibotu
             public static void Increment(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$add", properties}});
+                Controller.DoEngage(new Value {{"_kb_add", properties}});
             }
 
             /// <summary>
@@ -386,7 +386,7 @@ namespace kibotu
             {
                 if (!IsInitialized()) return;
                 properties.Merge(Controller.GetEngageDefaultProperties());
-                Controller.DoEngage(new Value {{"$set", properties}});
+                Controller.DoEngage(new Value {{"_kb_set", properties}});
             }
 
             /// <summary>
@@ -406,7 +406,7 @@ namespace kibotu
             public static void SetOnce(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$set_once", properties}});
+                Controller.DoEngage(new Value {{"_kb_set_once", properties}});
             }
 
             /// <summary>
@@ -426,7 +426,7 @@ namespace kibotu
             /// <param name="properties">a JSONObject containing the collection of properties you wish to apply</param>
             public static void TrackCharge(double amount, Value properties)
             {
-                properties["$amount"] = amount;
+                properties["_kb_amount"] = amount;
                 TrackCharge(properties);
             }
 
@@ -436,7 +436,7 @@ namespace kibotu
             /// <param name="amount">amount of revenue received</param>
             public static void TrackCharge(double amount)
             {
-                TrackCharge(new Value {{"$amount", amount}});
+                TrackCharge(new Value {{"_kb_amount", amount}});
             }
 
             /// <summary>
@@ -446,8 +446,8 @@ namespace kibotu
             public static void TrackCharge(Value properties)
             {
                 if (!IsInitialized()) return;
-                properties["$time"] = Util.CurrentDateTime();
-                Controller.DoEngage(new Value {{"$append", new Value {{"$transactions", properties}}}});
+                properties["_kb_time"] = Util.CurrentDateTime();
+                Controller.DoEngage(new Value {{"_kb_append", new Value {{"_kb_transactions", properties}}}});
             }
 
             /// <summary>
@@ -459,7 +459,7 @@ namespace kibotu
             public static void Union(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$union", properties}});
+                Controller.DoEngage(new Value {{"_kb_union", properties}});
             }
 
             /// <summary>
@@ -482,7 +482,7 @@ namespace kibotu
             public static void Unset(string property)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"$unset", new string[]{property}}});
+                Controller.DoEngage(new Value {{"_kb_unset", new string[]{property}}});
             }
 
             /// <summary>
@@ -490,7 +490,7 @@ namespace kibotu
             /// </summary>
             public static string Email
             {
-                set => Set(new Value {{"$email", value}});
+                set => Set(new Value {{"_kb_email", value}});
             }
 
             /// <summary>
@@ -498,7 +498,7 @@ namespace kibotu
             /// </summary>
             public static string FirstName
             {
-                set => Set(new Value {{"$first_name", value}});
+                set => Set(new Value {{"_kb_first_name", value}});
             }
 
             /// <summary>
@@ -506,7 +506,7 @@ namespace kibotu
             /// </summary>
             public static string LastName
             {
-                set => Set(new Value {{"$last_name", value}});
+                set => Set(new Value {{"_kb_last_name", value}});
             }
 
             /// <summary>
@@ -514,7 +514,7 @@ namespace kibotu
             /// </summary>
             public static string Name
             {
-                set => Set(new Value {{"$name", value}});
+                set => Set(new Value {{"_kb_name", value}});
             }
 
         }

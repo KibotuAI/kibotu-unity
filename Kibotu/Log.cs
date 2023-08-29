@@ -8,7 +8,7 @@ namespace kibotu
         {
             if (Config.ShowDebug)
             {
-                Debug.Log("[Mixpanel] " + s);
+                Debug.Log("[Kibotu] " + s);
             }
         }
 
@@ -16,7 +16,7 @@ namespace kibotu
         {
             if (Config.ShowDebug)
             {
-                Debug.LogError("[Mixpanel] " + s);
+                Debug.LogError("[Kibotu] " + s);
             }
         }
     }
