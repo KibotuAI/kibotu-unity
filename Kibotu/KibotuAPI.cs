@@ -273,6 +273,11 @@ namespace kibotu
             Controller.DoTrack(eventName, properties);
         }
 
+        public static string ConsumePredictIdOfEvent(string eventName)
+        {
+            return !IsInitialized() ? null : Controller.ConsumePredictIdOfEvent(eventName);
+        } 
+
         /// <summary>
         /// Removes a single superProperty.
         /// </summary>

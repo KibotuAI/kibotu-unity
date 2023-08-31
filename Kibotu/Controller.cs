@@ -10,6 +10,7 @@ using Unity.Jobs;
 using Unity.Collections;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 
 #if UNITY_IOS
 using UnityEngine.iOS;
@@ -354,6 +355,12 @@ namespace kibotu
             return _autoTrackProperties;
         }
 
+        // TODO get this config from Kibotu server per game
+        private static Dictionary<string, string> _predictionTriggeringEvents = new()
+        {
+            {"MatchFinished", ""}
+        };
+
         internal static void DoTrack(string eventName, Value properties)
         {
             if (!KibotuStorage.IsTracking) return;
@@ -379,13 +386,33 @@ namespace kibotu
             
             data["event"] = eventName;
             data["properties"] = properties;
+            data["distinct_id"] = KibotuStorage.DistinctId;
             data["_kb_metadata"] = Metadata.GetEventMetadata();
 
             if (Debug.isDebugBuild && !eventName.StartsWith("$")) {
                 KibotuStorage.HasTracked = true;
             }
 
+            var isPredictionTriggeringEvent = _predictionTriggeringEvents.ContainsKey(eventName);
+            if (isPredictionTriggeringEvent) {
+                var predictId = Guid.NewGuid().ToString();
+                data["predictId"] = predictId;
+                _predictionTriggeringEvents[eventName] = predictId;
+            }
+            
             KibotuStorage.EnqueueTrackingData(data, KibotuStorage.FlushType.EVENTS);
+
+            if (isPredictionTriggeringEvent) {
+                GetInstance().DoFlush();
+            }
+        }
+
+        internal static string ConsumePredictIdOfEvent(string eventName)
+        {
+            if (!_predictionTriggeringEvents.TryGetValue(eventName, out var predictId)) return "";
+            
+            _predictionTriggeringEvents[eventName] = "";
+            return predictId;
         }
 
         internal static void DoEngage(Value properties)
