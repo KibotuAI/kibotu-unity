@@ -6,7 +6,7 @@ namespace kibotu
         internal static string TrackUrl = "https://api.kibotu.ai/track";
         internal static string EngageUrl = "https://api.kibotu.ai/engage";
         internal static bool ShowDebug = false;
-        internal static bool ManualInitialization = false;
+        internal static bool ManualInitialization = true;
         internal static float FlushInterval = 60f;
 
         internal static int BatchSize = 50;
