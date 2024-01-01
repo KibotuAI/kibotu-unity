@@ -305,7 +305,7 @@ namespace kibotu
         public static void SetToken(string token)
         {
             if (!IsInitialized()) return;
-            KibotuSettings.Instance.DebugToken = token;
+//             KibotuSettings.Instance.DebugToken = token;
             KibotuSettings.Instance.RuntimeToken = token;
         }
 
