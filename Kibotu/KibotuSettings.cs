@@ -16,24 +16,25 @@ namespace kibotu
         //TODO: Convert to log level
         [Tooltip("If true will print helpful debugging messages")] 
         public bool ShowDebug;
-        [Tooltip("If true, you need to manually initialize the library")]
-        public bool ManualInitialization;
+//         [Tooltip("If true, you need to manually initialize the library")]
+//         public bool ManualInitialization;
         [Tooltip("The api host of where to send the requests to. Useful when you need to proxy all the request to somewhere else.'")]
         public string APIHostAddress = "https://api.kibotu.ai/";
         [Tooltip("The token of the Kibotu project.")]
         public string RuntimeToken = "";
-        [Tooltip("Used when the DEBUG compile flag is set or when in the editor. Useful if you want to use different tokens for test builds.")]
-        public string DebugToken = "";
+//         [Tooltip("Used when the DEBUG compile flag is set or when in the editor. Useful if you want to use different tokens for test builds.")]
+//         public string DebugToken = "";
         [Tooltip("Seconds (in realtime) between sending data to the API Host.")]
         public float FlushInterval = 60f;
 
         internal string Token {
             get {
-                #if UNITY_EDITOR || DEBUG
-                return DebugToken;
-                #else
+//                 #if UNITY_EDITOR || DEBUG
+//                 return DebugToken;
+//                 #else
+//                 return RuntimeToken;
+//                 #endif
                 return RuntimeToken;
-                #endif
             }
         }
 
@@ -43,7 +44,7 @@ namespace kibotu
             Config.TrackUrl = string.Format(TrackUrlTemplate, host);
             Config.EngageUrl = string.Format(EngageUrlTemplate, host);
             Config.ShowDebug = ShowDebug;
-            Config.ManualInitialization = ManualInitialization;
+//             Config.ManualInitialization = ManualInitialization;
             Config.FlushInterval = FlushInterval;
         }
 
