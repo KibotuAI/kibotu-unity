@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace kibotu
 {
@@ -271,6 +272,34 @@ namespace kibotu
         public static void Track(string eventName, Value properties) {
             if (!IsInitialized()) return;
             Controller.DoTrack(eventName, properties);
+        }
+     
+        public static void GetPersonalizedBanner(Dictionary<string, object> value, Action<Asset> callback)
+        {
+            var vvalue = new kibotu.Value();
+            if (value != null)
+            {
+                foreach (var pair in value)
+                {
+                    vvalue[pair.Key] = pair.Value.ToString();
+                }
+            }
+
+            value["userId"] = DistinctId;
+            value["prizeKey"] = "CurrencyPremium_CurrencySoft";
+            value["offerId"] = "8622d2-c8c8-4c52-851c-d71af05";
+            value["activeChamp"] = "Opac";
+            value["debugForceImageUrl"] = "myimg";
+            
+            if (String.IsNullOrEmpty(DistinctId))
+            {
+                Kibotu.Log("Not identified");
+                return;
+            }
+            if (!IsInitialized()) return;
+            Controller.GetPersonalizedBanner(value, callback);
+
+            return;
         }
 
         public static string ConsumePredictIdOfEvent(string eventName)

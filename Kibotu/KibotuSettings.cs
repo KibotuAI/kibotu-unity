@@ -12,6 +12,7 @@ namespace kibotu
     {
         private const string TrackUrlTemplate = "{0}track";
         private const string EngageUrlTemplate = "{0}engage";
+        private const string GetBannerUrlTemplate = "{0}ab/getPersonalizedBanner";
         
         [Tooltip("If true will print helpful debugging messages")]
         public bool ShowDebug;
@@ -33,6 +34,7 @@ namespace kibotu
             string host = APIHostAddress.EndsWith("/") ? APIHostAddress : $"{APIHostAddress}/";
             Config.TrackUrl = string.Format(TrackUrlTemplate, host);
             Config.EngageUrl = string.Format(EngageUrlTemplate, host);
+            Config.GetBannerUrl = string.Format(GetBannerUrlTemplate, host);
             Config.ShowDebug = ShowDebug;
             Config.FlushInterval = FlushInterval;
         }

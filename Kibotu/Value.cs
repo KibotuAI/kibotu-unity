@@ -12,8 +12,6 @@ namespace kibotu
     [Serializable]
     public class Value : IEnumerable, ISerializationCallbackReceiver
     {
-
-
         private enum ValueTypes
         {
             UNDEFINED,

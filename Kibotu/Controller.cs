@@ -11,6 +11,8 @@ using Unity.Collections;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
+using Unity.Plastic.Newtonsoft.Json;
 
 #if UNITY_IOS
 using UnityEngine.iOS;
@@ -95,6 +97,47 @@ namespace kibotu
             CheckForKibotuImplemented();
             Kibotu.Log($"Kibotu Component Started");
             StartCoroutine(WaitAndFlush());
+        }
+        
+        private void DoGetPersonal(Dictionary<string, object> requestData, Action<Asset> callback)
+        {
+            StartCoroutine(GetPersonalRequest(requestData, callback));
+        }
+
+        // General method for performing the POST request
+        private IEnumerator PerformPostRequest<TRequest, TResponse>(string url, TRequest requestData, Action<TResponse> callback)
+        {
+            string jsonRequest =  JsonConvert.SerializeObject( requestData ); //System.Text.Json;JsonSerializer.Serialize .ToJson(requestData);
+
+            using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
+            {
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonRequest);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SetRequestHeader("Authorization", KibotuSettings.Instance.Token);
+
+                yield return request.SendWebRequest();
+
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    // Handle error
+                    Debug.LogError("Error: " + request.error);
+                    callback(default);
+                }
+                else
+                {
+                    // Handle successful response
+                    string jsonResponse = request.downloadHandler.text;
+                    TResponse response = JsonUtility.FromJson<TResponse>(jsonResponse);
+                    callback(response);
+                }
+            }
+        }
+
+        private IEnumerator GetPersonalRequest(Dictionary<string, object> requestData, Action<Asset> callback)
+        {
+            yield return PerformPostRequest(Config.GetBannerUrl, requestData, callback);
         }
 
         private void KibotuTracking()
@@ -324,6 +367,12 @@ namespace kibotu
                 _autoEngageProperties = properties;
             }
             return _autoEngageProperties;
+        }
+
+        [CanBeNull]
+        internal static void GetPersonalizedBanner(Dictionary<string, object>  properties, Action<Asset> callback)
+        {
+            GetInstance().DoGetPersonal(properties, callback);
         }
 
         private static Value GetEventsDefaultProperties()
