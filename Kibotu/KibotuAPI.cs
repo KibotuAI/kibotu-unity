@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace kibotu
 {
@@ -19,7 +22,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "0.9.1";
+        internal const string KibotuUnityVersion = "0.9.3";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
@@ -36,9 +39,11 @@ namespace kibotu
         public static bool IsInitialized()
         {
             bool initialized = Controller.IsInitialized();
-            if (!initialized) {
+            if (!initialized)
+            {
                 Kibotu.Log("Kibotu is not initialized");
             }
+
             return initialized;
         }
 
@@ -107,11 +112,13 @@ namespace kibotu
         }
 
         [Obsolete("Please use 'DistinctId' instead!")]
-        public static string DistinctID {
+        public static string DistinctID
+        {
             get => KibotuStorage.DistinctId;
         }
 
-        public static string DistinctId {
+        public static string DistinctId
+        {
             get => KibotuStorage.DistinctId;
         }
 
@@ -199,7 +206,7 @@ namespace kibotu
             if (!IsInitialized()) return;
             Controller.DoClear();
         }
-        
+
         /// <summary>
         /// Clears all super properties
         /// </summary>
@@ -269,11 +276,171 @@ namespace kibotu
         /// <param name="properties">A Value containing the key value pairs of the properties
         /// to include in this event. Pass null if no extra properties exist.
         /// </param>
-        public static void Track(string eventName, Value properties) {
+        public static void Track(string eventName, Value properties)
+        {
             if (!IsInitialized()) return;
             Controller.DoTrack(eventName, properties);
         }
-     
+
+        // Init quests - fetch quests config from the backend
+        public static void InitQuests(Dictionary<string, object> properties)
+        {
+            if (!IsInitialized()) return;
+            Controller.InitQuests(properties);
+        }
+
+        /**
+         * Handles triggered event, could be progressing an active quest or starting a new quest.
+         * Async method, result of this is bool - false: do nothing, true: show ActiveQuest modal.
+         */
+        public static void TriggerQuestState(string eventName, Dictionary<string, object> eventProperties)
+        {
+            // Logical sequence:
+            // 1. Try activating a new quest
+            // 2. Try processing an event for quest state 
+            // 3. Try showing a modal for active quest
+
+            if (!IsInitialized()) return;
+            if (!Controller.GetInstance().SyncedQuests)
+            {
+                Debug.Log("TriggerQuestState - no SyncedQuests skipping action");
+                return;
+            }
+
+            var userProps = Controller.GetInstance().UserPropsOnInit;
+            var activeQuest = GetActiveQuest();
+
+            // Process event to trigger new quest
+            if (activeQuest == null)
+            {
+                Debug.Log("TriggerQuestState - no active quest found");
+                var eligibleQuests = GetEligibleQuestsDefinitions( /*userProps*/);
+                if (eligibleQuests == null) return;
+                foreach (var quest in eligibleQuests.List)
+                {
+                    // Get the first matching - 
+                    if (quest.TryTriggersStateStarting(userProps, eventName, 0))
+                    {
+                        // TODO start new quest
+                        Debug.Log("TriggerQuestState - TODO start new quest: " + quest.Id);
+
+                        quest.Progress = new KibotuQuestProgress();
+                        quest.Progress.Status = EnumQuestStates.Welcome;
+                        quest.Progress.CurrentStep = 0;
+
+                        Controller.GetInstance().ActiveQuest = quest;
+                        activeQuest = quest;
+
+                        Controller.QuestStart(quest.Id, eventName, eventProperties);
+                        break;
+                    }
+                    else
+                    {
+                        // not starting this quest
+                        Debug.Log("TriggerQuestState - not starting this quest: " + quest.Id);
+                    }
+                }
+            }
+
+            // activeQuest might be set in the previous block 
+            if (activeQuest != null)
+            {
+                Debug.Log("TriggerQuestState - active quest found");
+
+                // Process event for active event
+                if (activeQuest.TryTriggersStateProgressing(userProps, eventName, 0))
+                {
+                    if (activeQuest.Progress.Status == EnumQuestStates.Welcome &&
+                        activeQuest.Progress.Status == EnumQuestStates.Progress &&
+                        activeQuest.to < DateTime.Now)
+                    {
+                        // Time's up - won't count the new event
+                        if (activeQuest.Progress.CurrentStep < activeQuest.Milestones[0].Goal)
+                        {
+                            activeQuest.Progress.Status = EnumQuestStates.Lost;
+                        }
+                        else
+                        {
+                            activeQuest.Progress.Status = EnumQuestStates.Won;
+                        }
+                        Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
+                    }
+                    else
+                    {
+                        // Progressing the quest
+                        activeQuest.Progress.Status = EnumQuestStates.Progress;
+                        activeQuest.Progress.CurrentStep++;
+
+                        Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
+                            (cbquest) =>
+                            {
+                                if (activeQuest.Progress.CurrentStep >=
+                                    activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
+                                {
+                                    activeQuest.Progress.Status = EnumQuestStates.Won;
+                                    Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
+                                }
+                            });
+                    }
+                }
+            }
+        }
+
+        public static bool TriggerQuestUI(string eventName, Dictionary<string, object> eventProperties)
+        {
+            if (!IsInitialized()) return false;
+            if (!Controller.GetInstance().SyncedQuests) return false;
+
+            var userProps = Controller.GetInstance().UserPropsOnInit;
+
+            // Show only if got active quest
+            var activeQuest = GetActiveQuest( /*eventProperties*/);
+
+            if (activeQuest != null)
+            {
+                Debug.Log("TriggerQuestUI - active quest found " + " questId: " + activeQuest.Id + " current status: " +
+                          activeQuest.Progress.Status);
+
+                // Process event for active event
+                if (activeQuest.TryTriggersUI(userProps, eventName, 0))
+                {
+                    Debug.Log("TryTriggersUI - true, should show modal");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static KibotuQuest GetActiveQuest()
+        {
+            if (!IsInitialized()) return null;
+            if (!Controller.GetInstance().SyncedQuests) return null;
+            var activeQuest = Controller.GetInstance().ActiveQuest;
+            return activeQuest;
+        }
+
+        public static KibotuListResult<KibotuQuest> GetEligibleQuestsDefinitions()
+        {
+            if (!IsInitialized()) return null;
+            if (!Controller.GetInstance().SyncedQuests) return null;
+            return Controller.GetInstance().EligibleQuests;
+        }
+
+        /**
+         * To be invoked when user got the finish state and collected the prize.
+         */
+        public static bool FinalizeQuest(KibotuQuest quest, Dictionary<string, object> properties)
+        {
+            if (!IsInitialized()) return false;
+
+            // TODO TODO!!
+            // TODO TODO!!
+            // TODO TODO!!
+
+            return false;
+        }
+
         public static void GetPersonalizedBanner(Dictionary<string, object> value, Action<Asset> callback)
         {
             var vvalue = new kibotu.Value();
@@ -290,12 +457,13 @@ namespace kibotu
             value["offerId"] = "8622d2-c8c8-4c52-851c-d71af05";
             value["activeChamp"] = "Opac";
             value["debugForceImageUrl"] = "myimg";
-            
+
             if (String.IsNullOrEmpty(DistinctId))
             {
                 Kibotu.Log("Not identified");
                 return;
             }
+
             if (!IsInitialized()) return;
             Controller.GetPersonalizedBanner(value, callback);
 
@@ -305,7 +473,7 @@ namespace kibotu
         public static string ConsumePredictIdOfEvent(string eventName)
         {
             return !IsInitialized() ? null : Controller.ConsumePredictIdOfEvent(eventName);
-        } 
+        }
 
         /// <summary>
         /// Removes a single superProperty.
@@ -359,7 +527,7 @@ namespace kibotu
             public static void Append(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_append", properties}});
+                Controller.DoEngage(new Value { { "_kb_append", properties } });
             }
 
             /// <summary>
@@ -369,7 +537,7 @@ namespace kibotu
             /// <param name="values">the new value that will appear at the end of the property's list</param>
             public static void Append(string property, Value values)
             {
-                Append(new Value {{property, values}});
+                Append(new Value { { property, values } });
             }
 
             /// <summary>
@@ -386,7 +554,7 @@ namespace kibotu
             public static void DeleteUser()
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_delete", ""}});
+                Controller.DoEngage(new Value { { "_kb_delete", "" } });
             }
 
             /// <summary>
@@ -396,7 +564,7 @@ namespace kibotu
             public static void Increment(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_add", properties}});
+                Controller.DoEngage(new Value { { "_kb_add", properties } });
             }
 
             /// <summary>
@@ -406,7 +574,7 @@ namespace kibotu
             /// <param name="by">amount to increment by</param>
             public static void Increment(string property, Value by)
             {
-                Increment(new Value {{property, by}});
+                Increment(new Value { { property, by } });
             }
 
             /// <summary>
@@ -420,7 +588,7 @@ namespace kibotu
             {
                 if (!IsInitialized()) return;
                 properties.Merge(Controller.GetEngageDefaultProperties());
-                Controller.DoEngage(new Value {{"_kb_set", properties}});
+                Controller.DoEngage(new Value { { "_kb_set", properties } });
             }
 
             /// <summary>
@@ -430,7 +598,7 @@ namespace kibotu
             /// <param name="to">property value</param>
             public static void Set(string property, Value to)
             {
-                Set(new Value {{property, to}});
+                Set(new Value { { property, to } });
             }
 
             /// <summary>
@@ -440,7 +608,7 @@ namespace kibotu
             public static void SetOnce(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_set_once", properties}});
+                Controller.DoEngage(new Value { { "_kb_set_once", properties } });
             }
 
             /// <summary>
@@ -450,7 +618,7 @@ namespace kibotu
             /// <param name="to">property value</param>
             public static void SetOnce(string property, Value to)
             {
-                SetOnce(new Value {{property, to}});
+                SetOnce(new Value { { property, to } });
             }
 
             /// <summary>
@@ -470,7 +638,7 @@ namespace kibotu
             /// <param name="amount">amount of revenue received</param>
             public static void TrackCharge(double amount)
             {
-                TrackCharge(new Value {{"_kb_amount", amount}});
+                TrackCharge(new Value { { "_kb_amount", amount } });
             }
 
             /// <summary>
@@ -481,7 +649,7 @@ namespace kibotu
             {
                 if (!IsInitialized()) return;
                 properties["_kb_time"] = Util.CurrentDateTime();
-                Controller.DoEngage(new Value {{"_kb_append", new Value {{"_kb_transactions", properties}}}});
+                Controller.DoEngage(new Value { { "_kb_append", new Value { { "_kb_transactions", properties } } } });
             }
 
             /// <summary>
@@ -493,7 +661,7 @@ namespace kibotu
             public static void Union(Value properties)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_union", properties}});
+                Controller.DoEngage(new Value { { "_kb_union", properties } });
             }
 
             /// <summary>
@@ -506,7 +674,7 @@ namespace kibotu
             {
                 if (!values.IsArray)
                     throw new ArgumentException("Union with values property must be an array", nameof(values));
-                Union(new Value {{property, values}});
+                Union(new Value { { property, values } });
             }
 
             /// <summary>
@@ -516,7 +684,7 @@ namespace kibotu
             public static void Unset(string property)
             {
                 if (!IsInitialized()) return;
-                Controller.DoEngage(new Value {{"_kb_unset", new string[]{property}}});
+                Controller.DoEngage(new Value { { "_kb_unset", new string[] { property } } });
             }
 
             /// <summary>
@@ -524,7 +692,7 @@ namespace kibotu
             /// </summary>
             public static string Email
             {
-                set => Set(new Value {{"_kb_email", value}});
+                set => Set(new Value { { "_kb_email", value } });
             }
 
             /// <summary>
@@ -532,7 +700,7 @@ namespace kibotu
             /// </summary>
             public static string FirstName
             {
-                set => Set(new Value {{"_kb_first_name", value}});
+                set => Set(new Value { { "_kb_first_name", value } });
             }
 
             /// <summary>
@@ -540,7 +708,7 @@ namespace kibotu
             /// </summary>
             public static string LastName
             {
-                set => Set(new Value {{"_kb_last_name", value}});
+                set => Set(new Value { { "_kb_last_name", value } });
             }
 
             /// <summary>
@@ -548,9 +716,8 @@ namespace kibotu
             /// </summary>
             public static string Name
             {
-                set => Set(new Value {{"_kb_name", value}});
+                set => Set(new Value { { "_kb_name", value } });
             }
-
         }
     }
 }
