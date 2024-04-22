@@ -289,6 +289,22 @@ namespace kibotu
             Controller.InitQuests(properties);
         }
 
+        public static void onQuestRewardAction(string questId)
+        {
+            Controller.QuestFinalize(questId);
+        }
+
+        public static void onClosedWelcomeUI(string questId)
+        {
+            var activeQuest = Controller.GetInstance().ActiveQuest;
+            if (activeQuest != null && 
+                activeQuest.Progress != null &&
+                activeQuest.Progress.Status == EnumQuestStates.Welcome)
+            {
+                Controller.GetInstance().ActiveQuest.Progress.Status = EnumQuestStates.Progress;
+            }
+        }
+
         /**
          * Handles triggered event, could be progressing an active quest or starting a new quest.
          * Async method, result of this is bool - false: do nothing, true: show ActiveQuest modal.
@@ -314,9 +330,9 @@ namespace kibotu
             if (activeQuest == null)
             {
                 Debug.Log("TriggerQuestState - no active quest found");
-                var eligibleQuests = GetEligibleQuestsDefinitions( /*userProps*/);
+                var eligibleQuests = GetEligibleQuestsDefinitions();
                 if (eligibleQuests == null) return;
-                foreach (var quest in eligibleQuests.List)
+                foreach (var quest in eligibleQuests)
                 {
                     // Get the first matching - 
                     if (quest.TryTriggersStateStarting(userProps, eventName, 0))
@@ -363,6 +379,7 @@ namespace kibotu
                         {
                             activeQuest.Progress.Status = EnumQuestStates.Won;
                         }
+
                         Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
                     }
                     else
@@ -420,7 +437,7 @@ namespace kibotu
             return activeQuest;
         }
 
-        public static KibotuListResult<KibotuQuest> GetEligibleQuestsDefinitions()
+        public static List<KibotuQuest> GetEligibleQuestsDefinitions()
         {
             if (!IsInitialized()) return null;
             if (!Controller.GetInstance().SyncedQuests) return null;

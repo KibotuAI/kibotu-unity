@@ -6,6 +6,7 @@ namespace kibotu
         internal static string EngageUrl = "https://api.kibotu.ai/engage";
         internal static string GetBannerUrl = "https://api.kibotu.ai/ab/getPersonalizedBanner";
         internal static string GetQuestsEligibleUrl = "";
+        internal static string GetQuestsFinalizedUrl = "";
         internal static string GetQuestsActiveUrl = "";
         internal static string GetQuestActionPrefUrl = "";
 

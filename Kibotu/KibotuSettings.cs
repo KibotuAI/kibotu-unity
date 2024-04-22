@@ -15,18 +15,9 @@ namespace kibotu
         private const string GetBannerUrlTemplate = "{0}ab/getPersonalizedBanner";
         internal static string GetQuestsEligibleUrl = "{0}quests/eligible";
         internal static string GetQuestsActiveUrl = "{0}quests/active";
+        internal static string GetQuestsFinalizedUrl = "{0}quests/finalized";
         internal static string GetQuestActionPrefUrl = "{0}quests";
-        
-        // internal static string GetQuestStartUrl = "{0}quests/{1}/start";
-        // internal static string GetQuestProgressUrl = "{0}quests/{1}/trigger";
-        // internal static string GetQuestFinishUrl = "{0}quests/{1}/finish";
-        // internal static string GetQuestFinalizeUrl = "{0}quests/{1}/finalize";
-        
-        // internal static string GetBannerUrl = "https://api.kibotu.ai/quests/:questId/start";
-        // internal static string GetBannerUrl = "https://api.kibotu.ai/quests/:questId/trigger";
-        // internal static string GetBannerUrl = "https://api.kibotu.ai/quests/:questId/finish";
-        // internal static string GetBannerUrl = "https://api.kibotu.ai/quests/:questId/finalize";
-        
+            
         [Tooltip("If true will print helpful debugging messages")]
         public bool ShowDebug;
         [Tooltip("The api host of where to send the requests to. Useful when you need to proxy all the request to somewhere else.'")]
@@ -50,7 +41,7 @@ namespace kibotu
             Config.GetBannerUrl = string.Format(GetBannerUrlTemplate, host);
             Config.GetQuestsEligibleUrl = string.Format(GetQuestsEligibleUrl, host);
             Config.GetQuestsActiveUrl = string.Format(GetQuestsActiveUrl, host);
-            
+            Config.GetQuestsFinalizedUrl = string.Format(GetQuestsFinalizedUrl, host);
             Config.GetQuestActionPrefUrl = string.Format(GetQuestActionPrefUrl, host);
             
             Config.ShowDebug = ShowDebug;

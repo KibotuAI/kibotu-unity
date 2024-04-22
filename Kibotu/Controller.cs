@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -107,7 +108,7 @@ namespace kibotu
         [CanBeNull] public string PlayerId;
         [CanBeNull] public Dictionary<string, object> UserPropsOnInit;
         [CanBeNull] public KibotuQuest ActiveQuest;
-        public KibotuListResult<KibotuQuest> EligibleQuests;
+        public List<KibotuQuest> EligibleQuests;
 
         private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
@@ -144,14 +145,16 @@ namespace kibotu
                 PlayerId = playerId.ToString();
             }
 
-            StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests) =>
+            StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
                 if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
                 {
                     ActiveQuest = activeQuest;
                 }
-
-                EligibleQuests = quests;
+                // finalizedQuestIds
+                
+                // filter out all finalizedQuestIds from quests by object id
+                EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
             }));
         }
@@ -236,21 +239,24 @@ namespace kibotu
         }
 
         private IEnumerator InitQuestsRequest(Dictionary<string, object> requestData,
-            Action<KibotuQuest, KibotuListResult<KibotuQuest>> callback)
+            Action<KibotuQuest, KibotuListResult<KibotuQuest>, KibotuListResult<string>> callback)
         {
             KibotuQuest response1 = null;
             KibotuListResult<KibotuQuest> response2 = null;
-
+            KibotuListResult<string> response3 = null;
+            
             // Start the first request
             yield return StartCoroutine(PerformPostRequest(Config.GetQuestsActiveUrl, requestData,
                 (KibotuQuest response) => { response1 = response; }));
             yield return StartCoroutine(PerformPostRequest(Config.GetQuestsEligibleUrl, requestData,
                 (KibotuListResult<KibotuQuest> response) => { response2 = response; }));
-
+            yield return StartCoroutine(PerformPostRequest(Config.GetQuestsFinalizedUrl, requestData,
+                (KibotuListResult<string> response) => { response3 = response; }));
+            
             // Wait until both requests are completed
-            yield return new WaitUntil(() => response1 != null && response2 != null);
+            yield return new WaitUntil(() => response1 != null && response2 != null && response3 != null);
 
-            callback(response1, response2);
+            callback(response1, response2, response3);
         }
 
         private IEnumerator GetPersonalRequest(Dictionary<string, object> requestData, Action<Asset> callback)
@@ -527,9 +533,12 @@ namespace kibotu
             GetInstance().DoQuestFinish(questId, eventName, eventProperties);
         }
         
-        internal static void QuestFinalize(string questId, string eventName, Dictionary<string, object> eventProperties)
+        internal static void QuestFinalize(string questId)
         {
             GetInstance().DoQuestFinalize(questId);
+            
+            // Remove immediatelly from eligible quests list
+            GetInstance().EligibleQuests = GetInstance().EligibleQuests.Where(x => x.Id != questId).ToList();
         }
 
         [CanBeNull]
