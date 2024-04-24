@@ -419,22 +419,33 @@ namespace kibotu
             {
                 Kibotu.Log("TriggerQuestUI skip processing - quests are not synced");
                 return false;
-            };
+            }
+
+            ;
 
             var userProps = Controller.GetInstance().UserPropsOnInit;
 
             // Show only if got active quest
-            var activeQuest = GetActiveQuest( /*eventProperties*/);
+            var activeQuest = GetActiveQuest();
 
             if (activeQuest != null)
             {
-                    Kibotu.Log(
-                        $"TriggerQuestUI - active quest found  questId: {activeQuest.Id} current status: {activeQuest.Progress?.Status}");
+                Kibotu.Log(
+                    $"TriggerQuestUI - active quest found  questId: {activeQuest.Id} current status: {activeQuest.Progress?.Status}");
 
                 // Process event for active event
                 if (activeQuest.TryTriggersUI(userProps, eventName, 0))
                 {
                     Kibotu.Log("TryTriggersUI - true, should show modal");
+
+                    if (activeQuest?.Progress?.ProgressKey != null && activeQuest?.Progress?.ProgressKey ==
+                        Controller.GetInstance().LastShownProgressKey)
+                    {
+                        Kibotu.Log("TryTriggersUI - false; Suppressing the same exact state");
+                        return false;
+                    }
+
+                    Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;
                     return true;
                 }
             }
@@ -450,6 +461,7 @@ namespace kibotu
                 Kibotu.Log("GetActiveQuest - quests are not synced");
                 return null;
             }
+
             var activeQuest = Controller.GetInstance().ActiveQuest;
             return activeQuest;
         }

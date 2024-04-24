@@ -104,6 +104,7 @@ namespace kibotu
             StartCoroutine(WaitAndFlush());
         }
 
+        [CanBeNull] public string LastShownProgressKey = null;
         public bool SyncedQuests;
         [CanBeNull] public string PlayerId;
         [CanBeNull] public Dictionary<string, object> UserPropsOnInit;
