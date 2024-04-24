@@ -11,7 +11,15 @@ namespace kibotu
                 Debug.Log("[Kibotu] " + s);
             }
         }
-
+        
+        public static void LogWarning(string s)
+        {
+            if (Config.ShowDebug)
+            {
+                Debug.LogWarning("[Kibotu] " + s);
+            }
+        }
+        
         public static void LogError(string s)
         {
             if (Config.ShowDebug)

@@ -113,7 +113,7 @@ namespace kibotu
         private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             StartCoroutine(StartQuestRequest(questId, eventName, eventProperties,
-                (activeQuest) => { Debug.Log("Quest started on backend"); }));
+                (activeQuest) => { Kibotu.Log("Quest started on backend"); }));
         }
 
         private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<KibotuQuest> callback)
@@ -121,7 +121,7 @@ namespace kibotu
             StartCoroutine(ProgressQuestRequest(questId, eventName, eventProperties,
                 (activeQuest) =>
                 {
-                    Debug.Log("Quest triggered on backend");
+                    Kibotu.Log("Quest triggered on backend");
                     callback(activeQuest);
                 }));
         }
@@ -129,12 +129,12 @@ namespace kibotu
         private void DoQuestFinish(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             StartCoroutine(FinishQuestRequest(questId, eventName, eventProperties,
-                (activeQuest) => { Debug.Log("Quest finished on backend"); }));
+                (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
         }
 
         private void DoQuestFinalize(string questId)
         {
-            StartCoroutine(FinalizeQuestRequest(questId, (activeQuest) => { Debug.Log("Quest finished on backend"); }));
+            StartCoroutine(FinalizeQuestRequest(questId, (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
         }
 
         private void DoInitQuests(Dictionary<string, object> requestData /*, Action<Asset> callback*/)
@@ -185,7 +185,7 @@ namespace kibotu
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     // Handle error
-                    Debug.LogError("Error: " + request.error);
+                    Kibotu.LogError("Error: " + request.error);
                     callback(default);
                 }
                 else

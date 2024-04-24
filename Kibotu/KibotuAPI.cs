@@ -297,12 +297,17 @@ namespace kibotu
         public static void onClosedWelcomeUI(string questId)
         {
             var activeQuest = Controller.GetInstance().ActiveQuest;
-            if (activeQuest != null && 
+            if (activeQuest != null &&
                 activeQuest.Progress != null &&
                 activeQuest.Progress.Status == EnumQuestStates.Welcome)
             {
                 Controller.GetInstance().ActiveQuest.Progress.Status = EnumQuestStates.Progress;
             }
+        }
+
+        public static void TriggerQuestState(string eventName)
+        {
+            TriggerQuestState(eventName, new Dictionary<string, object>());
         }
 
         /**
@@ -311,6 +316,8 @@ namespace kibotu
          */
         public static void TriggerQuestState(string eventName, Dictionary<string, object> eventProperties)
         {
+            Kibotu.Log("TriggerQuestState eventName: " + eventName);
+
             // Logical sequence:
             // 1. Try activating a new quest
             // 2. Try processing an event for quest state 
@@ -319,7 +326,7 @@ namespace kibotu
             if (!IsInitialized()) return;
             if (!Controller.GetInstance().SyncedQuests)
             {
-                Debug.Log("TriggerQuestState - no SyncedQuests skipping action");
+                Kibotu.Log("TriggerQuestState - no SyncedQuests skipping action");
                 return;
             }
 
@@ -329,7 +336,7 @@ namespace kibotu
             // Process event to trigger new quest
             if (activeQuest == null)
             {
-                Debug.Log("TriggerQuestState - no active quest found");
+                Kibotu.Log("TriggerQuestState - no active quest found");
                 var eligibleQuests = GetEligibleQuestsDefinitions();
                 if (eligibleQuests == null) return;
                 foreach (var quest in eligibleQuests)
@@ -338,7 +345,7 @@ namespace kibotu
                     if (quest.TryTriggersStateStarting(userProps, eventName, 0))
                     {
                         // TODO start new quest
-                        Debug.Log("TriggerQuestState - TODO start new quest: " + quest.Id);
+                        Kibotu.Log("TriggerQuestState - TODO start new quest: " + quest.Id);
 
                         quest.Progress = new KibotuQuestProgress();
                         quest.Progress.Status = EnumQuestStates.Welcome;
@@ -353,7 +360,7 @@ namespace kibotu
                     else
                     {
                         // not starting this quest
-                        Debug.Log("TriggerQuestState - not starting this quest: " + quest.Id);
+                        Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id);
                     }
                 }
             }
@@ -361,7 +368,7 @@ namespace kibotu
             // activeQuest might be set in the previous block 
             if (activeQuest != null)
             {
-                Debug.Log("TriggerQuestState - active quest found");
+                Kibotu.Log("TriggerQuestState - active quest found");
 
                 // Process event for active event
                 if (activeQuest.TryTriggersStateProgressing(userProps, eventName, 0))
@@ -405,6 +412,8 @@ namespace kibotu
 
         public static bool TriggerQuestUI(string eventName, Dictionary<string, object> eventProperties)
         {
+            Kibotu.Log("TriggerQuestUI eventName: " + eventName);
+
             if (!IsInitialized()) return false;
             if (!Controller.GetInstance().SyncedQuests) return false;
 
@@ -415,13 +424,14 @@ namespace kibotu
 
             if (activeQuest != null)
             {
-                Debug.Log("TriggerQuestUI - active quest found " + " questId: " + activeQuest.Id + " current status: " +
-                          activeQuest.Progress.Status);
+                Kibotu.Log("TriggerQuestUI - active quest found " + " questId: " + activeQuest.Id +
+                           " current status: " +
+                           activeQuest.Progress.Status);
 
                 // Process event for active event
                 if (activeQuest.TryTriggersUI(userProps, eventName, 0))
                 {
-                    Debug.Log("TryTriggersUI - true, should show modal");
+                    Kibotu.Log("TryTriggersUI - true, should show modal");
                     return true;
                 }
             }

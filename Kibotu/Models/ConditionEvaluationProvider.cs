@@ -13,8 +13,8 @@ namespace kibotu
 
         public bool EvalCondition(JToken attributes, JObject condition)
         {
-            Debug.Log("Beginning to evaluate attributes based on the provided JSON condition");
-            Debug.Log($"Attribute evaluation is based on the JSON condition '{condition}'");
+            Kibotu.Log("Beginning to evaluate attributes based on the provided JSON condition");
+            Kibotu.Log($"Attribute evaluation is based on the JSON condition '{condition}'");
 
             if (condition.ContainsKey("$or"))
             {
@@ -33,7 +33,7 @@ namespace kibotu
                 return !EvalCondition(attributes, (JObject)condition["$not"]);
             }
 
-            Debug.Log("No overarching condition found, evaluating condition values separately");
+            Kibotu.Log("No overarching condition found, evaluating condition values separately");
 
             foreach (JProperty property in condition.Properties())
             {
@@ -56,11 +56,11 @@ namespace kibotu
         {
             if (conditions.Count == 0)
             {
-                Debug.Log("No conditions found within the provided 'or' evaluation, skipping");
+                Kibotu.Log("No conditions found within the provided 'or' evaluation, skipping");
                 return true;
             }
 
-            Debug.Log("Evaluating all conditions within an 'or' context");
+            Kibotu.Log("Evaluating all conditions within an 'or' context");
 
             foreach (JObject condition in conditions)
             {
@@ -81,7 +81,7 @@ namespace kibotu
         /// <returns>True if the attributes satisfy all of the conditions.</returns>
         private bool EvalAnd(JToken attributes, JArray conditions)
         {
-            Debug.Log("Evaluating all conditions within an 'and' context");
+            Kibotu.Log("Evaluating all conditions within an 'and' context");
 
             foreach (JObject condition in conditions)
             {
@@ -102,7 +102,7 @@ namespace kibotu
         /// <returns>True if the condition value matches the attribute value.</returns>
         private bool EvalConditionValue(JToken conditionValue, JToken attributeValue)
         {
-            Debug.Log($"Evaluating condition value '{conditionValue}'");
+            Kibotu.Log($"Evaluating condition value '{conditionValue}'");
 
             if (conditionValue.Type == JTokenType.Object)
             {
@@ -110,7 +110,7 @@ namespace kibotu
 
                 if (IsOperatorObject(conditionObj))
                 {
-                    Debug.Log("Evaluating all condition properties against the operator condition");
+                    Kibotu.Log("Evaluating all condition properties against the operator condition");
 
                     foreach (JProperty property in conditionObj.Properties())
                     {
@@ -137,7 +137,7 @@ namespace kibotu
         {
             if (attributeValue?.Type != JTokenType.Array)
             {
-                Debug.Log($"Unable to match array elements with a non-array type of '{attributeValue.Type}'");
+                Kibotu.Log($"Unable to match array elements with a non-array type of '{attributeValue.Type}'");
                 return false;
             }
 
@@ -166,7 +166,7 @@ namespace kibotu
         /// <returns></returns>
         private bool EvalOperatorCondition(string op, JToken attributeValue, JToken conditionValue)
         {
-            Debug.Log($"Evaluating operator condition '{op}'");
+            Kibotu.Log($"Evaluating operator condition '{op}'");
 
             if (op == "$eq")
             {
@@ -305,7 +305,7 @@ namespace kibotu
                 return CompareVersions(attributeValue, conditionValue, x => x >= 0);
             }
 
-            Debug.LogWarning($"Unable to handle unsupported operator condition '{op}', failing the condition");
+            Kibotu.LogWarning($"Unable to handle unsupported operator condition '{op}', failing the condition");
 
             return false;
         }
@@ -343,7 +343,7 @@ namespace kibotu
         /// <returns>True if every key in the object starts with $.</returns>
         private bool IsOperatorObject(JObject obj)
         {
-            Debug.Log("Checking whether the object is an operator object");
+            Kibotu.Log("Checking whether the object is an operator object");
 
             foreach (JProperty property in obj.Properties())
             {
@@ -360,7 +360,7 @@ namespace kibotu
         {
             if (actualValue?.Type == JTokenType.Array)
             {
-                Debug.Log("Evaluating whether the specified value is in an array");
+                Kibotu.Log("Evaluating whether the specified value is in an array");
 
                 var conditionValues = new HashSet<JToken>(conditionValue);
                 var actualValues = new HashSet<JToken>(actualValue);
@@ -371,7 +371,7 @@ namespace kibotu
             }
             else
             {
-                Debug.Log("Evaluating whether the specified value is equal to or contained within the actual value");
+                Kibotu.Log("Evaluating whether the specified value is equal to or contained within the actual value");
 
                 if (conditionValue == actualValue)
                 {
