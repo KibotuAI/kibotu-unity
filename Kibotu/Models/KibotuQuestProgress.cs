@@ -46,5 +46,7 @@ namespace kibotu
         }
 
         [JsonProperty("questProgress")] public int CurrentStep = 0;
+        
+        public string ProgressKey => $"{CurrentState}_{CurrentStep}";
     }
 }

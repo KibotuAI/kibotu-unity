@@ -415,7 +415,11 @@ namespace kibotu
             Kibotu.Log("TriggerQuestUI eventName: " + eventName);
 
             if (!IsInitialized()) return false;
-            if (!Controller.GetInstance().SyncedQuests) return false;
+            if (!Controller.GetInstance().SyncedQuests)
+            {
+                Kibotu.Log("TriggerQuestUI skip processing - quests are not synced");
+                return false;
+            };
 
             var userProps = Controller.GetInstance().UserPropsOnInit;
 
@@ -424,9 +428,8 @@ namespace kibotu
 
             if (activeQuest != null)
             {
-                Kibotu.Log("TriggerQuestUI - active quest found " + " questId: " + activeQuest.Id +
-                           " current status: " +
-                           activeQuest.Progress.Status);
+                    Kibotu.Log(
+                        $"TriggerQuestUI - active quest found  questId: {activeQuest.Id} current status: {activeQuest.Progress?.Status}");
 
                 // Process event for active event
                 if (activeQuest.TryTriggersUI(userProps, eventName, 0))
@@ -442,7 +445,11 @@ namespace kibotu
         public static KibotuQuest GetActiveQuest()
         {
             if (!IsInitialized()) return null;
-            if (!Controller.GetInstance().SyncedQuests) return null;
+            if (!Controller.GetInstance().SyncedQuests)
+            {
+                Kibotu.Log("GetActiveQuest - quests are not synced");
+                return null;
+            }
             var activeQuest = Controller.GetInstance().ActiveQuest;
             return activeQuest;
         }
@@ -457,14 +464,10 @@ namespace kibotu
         /**
          * To be invoked when user got the finish state and collected the prize.
          */
-        public static bool FinalizeQuest(KibotuQuest quest, Dictionary<string, object> properties)
+        private static bool FinalizeQuest(KibotuQuest quest)
         {
             if (!IsInitialized()) return false;
-
-            // TODO TODO!!
-            // TODO TODO!!
-            // TODO TODO!!
-
+            Controller.QuestFinalize(quest.Id);
             return false;
         }
 

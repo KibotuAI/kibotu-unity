@@ -35,6 +35,26 @@ namespace kibotu
         public DateTime from;
         public DateTime to;
 
+        [CanBeNull]
+        public string GetPrize()
+        {
+            if (Progress?.Status == EnumQuestStates.Won)
+            {
+                // Iterate over milestones in reverse order and check if we have reached the goal
+                for (int i = Milestones.Length - 1; i >= 0; i--)
+                {
+                    var curMile = Milestones[i];
+                    if (Progress.CurrentStep >= curMile.Goal)
+                    {
+                        // reached the goal
+                        return curMile.PrizeSku;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public bool TryPassingConditions(JObject properties)
         {
             var match = new ConditionEvaluationProvider().EvalCondition(properties, TargetFilter);

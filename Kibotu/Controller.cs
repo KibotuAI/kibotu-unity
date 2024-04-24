@@ -515,6 +515,7 @@ namespace kibotu
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
+            Kibotu.Log("Kibotu InitQuests");
             GetInstance().DoInitQuests(properties);
         }
 
