@@ -12,6 +12,10 @@ namespace kibotu
     [Serializable]
     public class KibotuQuest
     {
+        public KibotuQuest()
+        {
+        }
+
         [JsonProperty("_id")] public string Id;
         [JsonProperty("name")] public string Title;
         [JsonProperty("enabled")] public string Enabled;

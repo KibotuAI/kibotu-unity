@@ -7,6 +7,10 @@ namespace kibotu
     [Serializable]
     public class KibotuQuestTriggers
     {
+        public KibotuQuestTriggers()
+        {
+        }
+
         [JsonProperty("state")] public KibotuQuestTriggerEvents State;
         [JsonProperty("ui")] public KibotuQuestTriggerEvents UI;
     }

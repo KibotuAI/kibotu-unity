@@ -7,6 +7,10 @@ namespace kibotu
     [Serializable]
     public class KibotuQuestEvent
     {
+        public KibotuQuestEvent()
+        {
+        }
+        
         [JsonProperty("eventName")]
         public string EventName { get; set; }
         
