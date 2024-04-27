@@ -2,6 +2,7 @@
 
 namespace kibotu
 {
+    [Serializable]
     public class KibotuQuestProgressMilestone
     {
         [JsonProperty("order")] public int Order;

@@ -2,6 +2,7 @@
 
 namespace kibotu
 {
+    [Serializable]
     public class KibotuQuestProgress
     {
         [JsonProperty("status")] public string CurrentState;

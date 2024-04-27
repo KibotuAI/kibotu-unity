@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace kibotu
 {
+    [Serializable]
     public class KibotuQuestEvent
     {
         [JsonProperty("eventName")]

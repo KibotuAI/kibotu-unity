@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace kibotu
 {
+    [Serializable]
     public class KibotuQuestTriggers
     {
         [JsonProperty("state")] public KibotuQuestTriggerEvents State;
