@@ -286,9 +286,16 @@ namespace kibotu
         public static void InitQuests(Dictionary<string, object> properties)
         {
             if (!IsInitialized()) return;
+            if (Controller.GetInstance().SyncedQuests)
+            {
+                Kibotu.Log("InitQuests skip processing - already synced");
+                return;
+            }
+
+                
             Controller.InitQuests(properties);
         }
-
+        
         public static void onQuestRewardAction(string questId)
         {
             Controller.QuestFinalize(questId);
@@ -420,8 +427,6 @@ namespace kibotu
                 Kibotu.Log("TriggerQuestUI skip processing - quests are not synced");
                 return false;
             }
-
-            ;
 
             var userProps = Controller.GetInstance().UserPropsOnInit;
 
