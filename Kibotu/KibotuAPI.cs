@@ -326,11 +326,19 @@ namespace kibotu
             if (!IsInitialized()) return;
             if (!Controller.GetInstance().SyncedQuests)
             {
-                Kibotu.Log("TriggerQuestState - no SyncedQuests skipping action");
+                Kibotu.Log("TriggerQuestState - no SyncedQuests yet; Skipping action...");
                 return;
             }
 
             var userProps = Controller.GetInstance().UserPropsOnInit;
+
+            var strUserProps = "";
+            foreach (var pair in userProps)
+			{
+				strUserProps += pair.Key + " = " + pair.Value + "; ";
+            }
+			Kibotu.Log("TriggerQuestState userProps: " + strUserProps);
+
             var activeQuest = GetActiveQuest();
 
             // Process event to trigger new quest
@@ -344,8 +352,8 @@ namespace kibotu
                     // Get the first matching - 
                     if (quest.TryTriggersStateStarting(userProps, eventName, 0))
                     {
-                        // TODO start new quest
-                        Kibotu.Log("TriggerQuestState - TODO start new quest: " + quest.Id);
+                        // start new quest
+                        Kibotu.Log("TriggerQuestState - start new quest: " + quest.Id);
 
                         quest.Progress = new KibotuQuestProgress();
                         quest.Progress.Status = EnumQuestStates.Welcome;
@@ -360,7 +368,7 @@ namespace kibotu
                     else
                     {
                         // not starting this quest
-                        Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id);
+                        Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id + "; eventName: " + eventName + "; userProps: " + strUserProps);
                     }
                 }
             }
@@ -428,8 +436,14 @@ namespace kibotu
 
             if (activeQuest != null)
             {
+	            var strUserProps = "";
+    	        foreach (var pair in userProps)
+				{
+					strUserProps += pair.Key + " = " + pair.Value + "; ";
+            	}
+
                 Kibotu.Log(
-                    $"TriggerQuestUI - active quest found  questId: {activeQuest.Id} current status: {activeQuest.Progress?.Status}");
+                    $"TriggerQuestUI - active quest found  questId: {activeQuest.Id}; current status: {activeQuest.Progress?.Status}; userProps: {strUserProps}");
 
                 // Process event for active event
                 if (activeQuest.TryTriggersUI(userProps, eventName, 0))
