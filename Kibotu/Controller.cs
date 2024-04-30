@@ -165,6 +165,29 @@ namespace kibotu
 
                 Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
+
+                var strEligibleQuests = "";
+                
+                foreach (var q in EligibleQuests)
+                {
+                    strEligibleQuests += q.Id + "; ";
+                    strEligibleQuests += q.Title + "; ";
+                    strEligibleQuests += q.from + "; ";
+                    strEligibleQuests += q.to + "; ";
+                    strEligibleQuests += "Triggers.State.Welcome: ";
+                    foreach (var ev in q.Triggers.State.Welcome) {
+                        strEligibleQuests += "eventName: " + ev.EventName + "; ";
+                    }
+
+                    foreach (var fi in q.TargetFilter)
+                    {
+                        strEligibleQuests += "TargetFilter: " + fi.Key + ":" + fi.Value + ";";
+                    }
+                }
+
+                Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
+                           EligibleQuests.Count);
+                Kibotu.Log("Quests initialized; EligibleQuests:" + strEligibleQuests);
             }));
         }
 
