@@ -548,6 +548,14 @@ namespace kibotu
         internal static void InitQuests(Dictionary<string, object> properties)
         {
             Kibotu.Log("Kibotu InitQuests");
+            
+            var strUserProps = "";
+            foreach (var pair in properties)
+            {
+                strUserProps += pair.Key + " = " + pair.Value + "; ";
+            }
+            Kibotu.Log("InitQuests userProps: " + strUserProps);
+            
             GetInstance().DoInitQuests(properties);
         }
 
