@@ -286,13 +286,6 @@ namespace kibotu
         public static void InitQuests(Dictionary<string, object> properties)
         {
             if (!IsInitialized()) return;
-            if (Controller.GetInstance().SyncedQuests)
-            {
-                Kibotu.Log("InitQuests skip processing - already synced");
-                return;
-            }
-
-                
             Controller.InitQuests(properties);
         }
         

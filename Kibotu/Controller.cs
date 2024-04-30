@@ -138,7 +138,7 @@ namespace kibotu
             StartCoroutine(FinalizeQuestRequest(questId, (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
         }
 
-        private void DoInitQuests(Dictionary<string, object> requestData /*, Action<Asset> callback*/)
+        private void DoInitQuests(Dictionary<string, object> requestData)
         {
             UserPropsOnInit = requestData;
             if (requestData.TryGetValue("playerId", out var playerId))
@@ -146,6 +146,11 @@ namespace kibotu
                 PlayerId = playerId.ToString();
             }
 
+            if (SyncedQuests == true)
+            {
+                Kibotu.Log("InitQuests skip processing - already synced");
+            }
+            
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
                 if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
