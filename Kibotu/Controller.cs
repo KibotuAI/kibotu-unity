@@ -150,13 +150,16 @@ namespace kibotu
             {
                 if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
                 {
+                    Kibotu.Log("Quests initialization: Active quest found: " + activeQuest.Id);
                     ActiveQuest = activeQuest;
                 }
-                // finalizedQuestIds
                 
                 // filter out all finalizedQuestIds from quests by object id
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
+
+                Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
+                           EligibleQuests.Count);
             }));
         }
 
