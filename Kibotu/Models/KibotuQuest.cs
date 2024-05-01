@@ -21,7 +21,10 @@ namespace kibotu
             Title = other.Title;
             Enabled = other.Enabled;
             Progress = new KibotuQuestProgress(other.Progress);
-            other.Milestones.CopyTo(Milestones);
+
+            Milestones = new KibotuQuestProgressMilestone[other.Milestones.Length];
+            other.Milestones.CopyTo(Milestones, 0);
+            
             CountryCodes = other.CountryCodes ?? new List<string>();
             Graphics = new KibotuQuestGraphics(other.Graphics);
             Triggers = new KibotuQuestTriggers(other.Triggers);

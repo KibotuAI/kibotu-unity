@@ -13,9 +13,9 @@ namespace kibotu
         
         public KibotuQuestTriggerEvents(KibotuQuestTriggerEvents other)
         {
-            other.Welcome.CopyTo(Welcome);
-            other.Progress.CopyTo(Progress);
-            other.Finish.CopyTo(Finish);
+            Welcome = new List<KibotuQuestEvent>(other.Welcome);
+            Progress = new List<KibotuQuestEvent>(other.Progress);
+            Finish = new List<KibotuQuestEvent>(other.Finish);
         }
 
         [JsonProperty("welcome")] public List<KibotuQuestEvent> Welcome;

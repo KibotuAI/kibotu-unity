@@ -10,10 +10,10 @@ namespace kibotu
         public KibotuListResult() {
         }
 
-        public KibotuListResult(List<T> other) {
-            other.CopyTo(List);
+        public KibotuListResult(KibotuListResult<T> other) {
+            List = new List<T>(other.List);
         }
-        
+
         [JsonProperty("list")]
         public List<T> List;
     }
