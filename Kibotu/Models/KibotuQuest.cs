@@ -20,7 +20,7 @@ namespace kibotu
             Id = other.Id;
             Title = other.Title;
             Enabled = other.Enabled;
-            Progress = new KibotuQuestProgress(other.Progress)
+            Progress = new KibotuQuestProgress(other.Progress);
             other.Milestones.CopyTo(Milestones);
             CountryCodes = other.CountryCodes ?? new List<string>();
             Graphics = new KibotuQuestGraphics(other.Graphics);
