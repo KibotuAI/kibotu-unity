@@ -92,7 +92,7 @@ namespace kibotu
         public bool TryTriggersStateStarting(Dictionary<string, object> properties, string eventName, int? eventValue)
         {
             // Check if current event triggers the quest
-            var isTriggerMatching = Triggers.State.Welcome.FindAll(x => x.EventName == eventName).Count > 0;
+            var isTriggerMatching = Triggers.State.Welcome.FindAll(x => x == eventName).Count > 0;
             if (isTriggerMatching)
             {
                 // Check if properties matches conditions
@@ -114,7 +114,7 @@ namespace kibotu
             // Check if current event triggers the quest
             if (Progress != null && (Progress.Status == EnumQuestStates.Welcome || Progress.Status == EnumQuestStates.Progress))
             {
-                var isTriggerMatching = Triggers.State.Progress.FindAll(x => x.EventName == eventName).Count > 0;
+                var isTriggerMatching = Triggers.State.Progress.FindAll(x => x == eventName).Count > 0;
                 if (isTriggerMatching)
                 {
                     // Check if properties matches conditions
@@ -158,7 +158,7 @@ namespace kibotu
                     break;
             }
             
-            var isTriggerMatching = triggersAllowList.FindAll(x => x.EventName == eventName).Count > 0;
+            var isTriggerMatching = triggersAllowList.FindAll(x => x == eventName).Count > 0;
             if (isTriggerMatching)
             {
                 return true;

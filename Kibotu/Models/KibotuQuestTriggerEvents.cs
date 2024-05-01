@@ -13,13 +13,13 @@ namespace kibotu
         
         public KibotuQuestTriggerEvents(KibotuQuestTriggerEvents other)
         {
-            Welcome = new List<KibotuQuestEvent>(other.Welcome);
-            Progress = new List<KibotuQuestEvent>(other.Progress);
-            Finish = new List<KibotuQuestEvent>(other.Finish);
+            Welcome = new List<string>(other.Welcome);
+            Progress = new List<string>(other.Progress);
+            Finish = new List<string>(other.Finish);
         }
 
-        [JsonProperty("welcome")] public List<KibotuQuestEvent> Welcome;
-        [JsonProperty("progress")] public List<KibotuQuestEvent> Progress;
-        [JsonProperty("finish")] public List<KibotuQuestEvent> Finish;
+        [JsonProperty("welcome")] public List<string> Welcome;
+        [JsonProperty("progress")] public List<string> Progress;
+        [JsonProperty("finish")] public List<string> Finish;
     }
 }

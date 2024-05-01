@@ -169,7 +169,7 @@ namespace kibotu
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
 
-                Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
+                Kibotu.Log("Quests initialized; 00 Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
 
                 var strEligibleQuests = "";
@@ -185,7 +185,7 @@ namespace kibotu
                             strEligibleQuests += "Triggers.State.Welcome: ";
                             foreach (var ev in q.Triggers.State.Welcome)
                             {
-                                strEligibleQuests += "eventName: " + ev.EventName + "; ";
+                                strEligibleQuests += "eventName: " + ev + "; ";
                             }
                         }
                         catch (Exception ex)
@@ -196,8 +196,17 @@ namespace kibotu
                         try {
                             strEligibleQuests += "Milestones: ";
                             foreach (var m in q.Milestones) {
-                                strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku;
+                                strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku + "   ";
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                        }
+                        
+                        try {
+                            strEligibleQuests += "Graphics.Welcome.Background: " + q.Graphics.Welcome.Background + "; ";
+                            strEligibleQuests += "Graphics.Welcome.TitleImage: " + q.Graphics.Progress.TitleImage + "; ";
                         }
                         catch (Exception ex)
                         {
@@ -273,6 +282,9 @@ namespace kibotu
                 {
                     // Handle successful response
                     string jsonResponse = request.downloadHandler.text;
+                    
+                    Kibotu.Log("DBG Raw Response: " + jsonResponse);
+                    
                     // TResponse response = JsonUtility.FromJson<TResponse>(jsonResponse);
                     TResponse response = JsonConvert.DeserializeObject<TResponse>(jsonResponse);
                     callback(response);
