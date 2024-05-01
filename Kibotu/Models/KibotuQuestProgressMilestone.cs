@@ -6,6 +6,21 @@ namespace kibotu
     [Serializable]
     public class KibotuQuestProgressMilestone
     {
+        public KibotuQuestProgressMilestone()
+        {
+            
+        }
+
+        public KibotuQuestProgressMilestone(KibotuQuestProgressMilestone other)
+        {
+            Order = other.Order;
+            PrizeTitle = other.PrizeTitle;
+            PrizeImage = other.PrizeImage;
+            PrizeSku = other.PrizeSku;
+            Goal = other.Goal;
+            GoalImage = other.GoalImage;
+        }
+
         [JsonProperty("order")] public int Order;
         [JsonProperty("prizeTitle")] public string PrizeTitle;
         [JsonProperty("prizeImage")] public string PrizeImage;

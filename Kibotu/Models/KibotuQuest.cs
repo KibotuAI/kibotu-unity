@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Quantum;
 using UnityEngine;
 
 namespace kibotu
@@ -15,6 +14,23 @@ namespace kibotu
         public KibotuQuest()
         {
         }
+        
+        public KibotuQuest(KibotuQuest other)
+        {
+            Id = other.Id;
+            Title = other.Title;
+            Enabled = other.Enabled;
+            Progress = new KibotuQuestProgress(other.Progress)
+            other.Milestones.CopyTo(Milestones);
+            CountryCodes = other.CountryCodes ?? new List<string>();
+            Graphics = new KibotuQuestGraphics(other.Graphics);
+            Triggers = new KibotuQuestTriggers(other.Triggers);
+            CollectibleIconImage = other.CollectibleIconImage;
+            TargetFilter = other.TargetFilter ?? new JObject();
+            from = other.from;
+            to = other.to;
+        }
+
 
         [JsonProperty("_id")] public string Id;
         [JsonProperty("name")] public string Title;
@@ -26,6 +42,11 @@ namespace kibotu
         [JsonProperty("triggers")] public KibotuQuestTriggers Triggers;
         [JsonProperty("collectibleIconImage")] public string CollectibleIconImage;
         
+        [JsonProperty("targetFilter")]
+        public JObject TargetFilter;
+
+        public DateTime from;
+        public DateTime to;
         public int TotalSteps
         {
             get
@@ -34,10 +55,7 @@ namespace kibotu
             }
         }
         
-        public JObject TargetFilter;
 
-        public DateTime from;
-        public DateTime to;
 
         [CanBeNull]
         public string GetPrize()

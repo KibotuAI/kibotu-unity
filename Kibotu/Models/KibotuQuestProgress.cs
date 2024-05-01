@@ -6,6 +6,16 @@ namespace kibotu
     [Serializable]
     public class KibotuQuestProgress
     {
+        public KibotuQuestProgress()
+        {
+            
+        }
+        public KibotuQuestProgress(KibotuQuestProgress other)
+        {
+            CurrentState = other.CurrentState;
+            CurrentStep = other.CurrentStep;
+        }
+        
         [JsonProperty("status")] public string CurrentState;
         
         public EnumQuestStates Status

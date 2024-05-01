@@ -7,6 +7,21 @@ namespace kibotu
     [Serializable]
     public class KibotuQuestGraphics
     {
+        public KibotuQuestGraphics()
+        {
+        }
+        
+        public KibotuQuestGraphics(KibotuQuestGraphics other)
+        {
+            Welcome = new KibotuQuestGraphic(other.Welcome);
+            // Started = new KibotuQuestGraphic(other.Started);
+            Progress = new KibotuQuestGraphic(other.Progress);
+            Lost = new KibotuQuestGraphic(other.Lost);
+            Won = new KibotuQuestGraphic(other.Won);
+        }
+
+
+        
         [JsonProperty("welcome")] public KibotuQuestGraphic Welcome;
         // [JsonProperty("started")] public KibotuQuestGraphic Started;
         [JsonProperty("progress")] public KibotuQuestGraphic Progress;

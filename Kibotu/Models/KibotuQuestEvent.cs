@@ -10,6 +10,12 @@ namespace kibotu
         public KibotuQuestEvent()
         {
         }
+
+        public KibotuQuestEvent(KibotuQuestEvent other)
+        {
+            EventName = other.EventName;
+            EventValue = other.EventValue;
+        }
         
         [JsonProperty("eventName")]
         public string EventName { get; set; }

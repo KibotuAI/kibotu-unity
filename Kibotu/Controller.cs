@@ -179,6 +179,13 @@ namespace kibotu
                         strEligibleQuests += "eventName: " + ev.EventName + "; ";
                     }
 
+                    strEligibleQuests += "Milestones: ";
+                    foreach (var m in q.Milestones) {
+                        strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku;
+                    }
+                    
+                    strEligibleQuests += "Progress.CurrentState: " + q.Progress.CurrentState;
+   
                     foreach (var fi in q.TargetFilter)
                     {
                         strEligibleQuests += "TargetFilter: " + fi.Key + ":" + fi.Value + ";";

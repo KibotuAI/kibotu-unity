@@ -7,6 +7,13 @@ namespace kibotu
     [Serializable]
     public class KibotuListResult<T>
     {
+        public KibotuListResult<T>() {
+        }
+        
+        public KibotuListResult<T>(List<T> other) {
+            other.CopyTo(List);
+        }
+
         [JsonProperty("list")]
         public List<T> List;
     }
