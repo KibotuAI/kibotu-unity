@@ -153,12 +153,18 @@ namespace kibotu
             
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
-                if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
-                {
-                    Kibotu.Log("Quests initialization: Active quest found: " + activeQuest.Id);
-                    ActiveQuest = activeQuest;
+                try {
+
+                    if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
+                    {
+                        Kibotu.Log("Quests initialization: Active quest found: " + activeQuest.Id);
+                        ActiveQuest = activeQuest;
+                    }
                 }
-                
+                catch (Exception ex)
+                {
+                    Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                }                
                 // filter out all finalizedQuestIds from quests by object id
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
@@ -167,31 +173,67 @@ namespace kibotu
                            EligibleQuests.Count);
 
                 var strEligibleQuests = "";
-                
-                foreach (var q in EligibleQuests)
-                {
-                    strEligibleQuests += q.Id + "; ";
-                    strEligibleQuests += q.Title + "; ";
-                    strEligibleQuests += q.from + "; ";
-                    strEligibleQuests += q.to + "; ";
-                    strEligibleQuests += "Triggers.State.Welcome: ";
-                    foreach (var ev in q.Triggers.State.Welcome) {
-                        strEligibleQuests += "eventName: " + ev.EventName + "; ";
-                    }
-
-                    strEligibleQuests += "Milestones: ";
-                    foreach (var m in q.Milestones) {
-                        strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku;
-                    }
-                    
-                    strEligibleQuests += "Progress.CurrentState: " + q.Progress.CurrentState;
-   
-                    foreach (var fi in q.TargetFilter)
+                try {
+                    foreach (var q in EligibleQuests)
                     {
-                        strEligibleQuests += "TargetFilter: " + fi.Key + ":" + fi.Value + ";";
+                        strEligibleQuests += q.Id + "; ";
+                        strEligibleQuests += q.Title + "; ";
+                        strEligibleQuests += q.from + "; ";
+                        strEligibleQuests += q.to + "; ";
+                        try
+                        {
+                            strEligibleQuests += "Triggers.State.Welcome: ";
+                            foreach (var ev in q.Triggers.State.Welcome)
+                            {
+                                strEligibleQuests += "eventName: " + ev.EventName + "; ";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                        }
+                        
+                        try {
+                            strEligibleQuests += "Milestones: ";
+                            foreach (var m in q.Milestones) {
+                                strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                        }
+                        
+                        try 
+                        {
+                            if (q.Progress != null) {
+                                strEligibleQuests += "Progress.CurrentState: " + q.Progress.CurrentState;
+                            } else {
+                                strEligibleQuests += "No Progress";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                        }
+                        try {
+                            foreach (var fi in q.TargetFilter)
+                            {
+                                strEligibleQuests += "TargetFilter: " + fi.Key + ":" + fi.Value + ";";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                        }
                     }
                 }
-
+                catch (Exception ex)
+                {
+                    Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                }
+                
+                
                 Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
                 Kibotu.Log("Quests initialized; EligibleQuests:" + strEligibleQuests);
