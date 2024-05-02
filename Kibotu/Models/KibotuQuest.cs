@@ -34,7 +34,6 @@ namespace kibotu
             to = other.to;
         }
 
-
         [JsonProperty("_id")] public string Id;
         [JsonProperty("name")] public string Title;
         [JsonProperty("enabled")] public string Enabled;
@@ -142,7 +141,7 @@ namespace kibotu
             }
             
             // Check if current event can trigger the UI
-            List<KibotuQuestEvent> triggersAllowList = new List<KibotuQuestEvent>();
+            List<string> triggersAllowList = new List<string>();
             
             switch (Progress.Status)
             {
