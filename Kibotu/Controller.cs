@@ -608,7 +608,7 @@ namespace kibotu
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
-            Kibotu.Log("Kibotu InitQuests");
+            Kibotu.Log("Kibotu InitQuests 0.13");
             
             var strUserProps = "";
             foreach (var pair in properties)
