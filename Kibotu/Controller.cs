@@ -640,6 +640,7 @@ namespace kibotu
             GetInstance().DoQuestFinalize(questId);
             
             // Remove immediatelly from eligible quests list
+            GetInstance().ActiveQuest = null; 
             GetInstance().EligibleQuests = GetInstance().EligibleQuests.Where(x => x.Id != questId).ToList();
         }
 

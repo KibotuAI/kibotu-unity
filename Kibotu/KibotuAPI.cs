@@ -381,8 +381,8 @@ namespace kibotu
                 // Process event for active event
                 if (activeQuest.TryTriggersStateProgressing(userProps, eventName, 0))
                 {
-                    if (activeQuest.Progress.Status == EnumQuestStates.Welcome &&
-                        activeQuest.Progress.Status == EnumQuestStates.Progress &&
+                    if ((activeQuest.Progress.Status == EnumQuestStates.Welcome ||
+                         activeQuest.Progress.Status == EnumQuestStates.Progress) &&
                         activeQuest.to < DateTime.Now)
                     {
                         // Time's up - won't count the new event
