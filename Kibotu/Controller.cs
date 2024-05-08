@@ -149,6 +149,7 @@ namespace kibotu
             if (SyncedQuests == true)
             {
                 Kibotu.Log("InitQuests skip processing - already synced");
+                return;
             }
             
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
@@ -608,7 +609,7 @@ namespace kibotu
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
-            Kibotu.Log("Kibotu InitQuests 0.13");
+            Kibotu.Log("Kibotu InitQuests 0.15");
             
             var strUserProps = "";
             foreach (var pair in properties)
