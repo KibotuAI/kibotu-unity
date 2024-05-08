@@ -1,6 +1,6 @@
 ﻿namespace kibotu;
 
-public class PreciseAB
+public static class PreciseAB
 {
     /// <summary>
     /// Hashes a string to a float between 0 and 1 using the simple Fowler–Noll–Vo algorithm (fnv32a).
