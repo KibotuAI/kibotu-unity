@@ -609,7 +609,7 @@ namespace kibotu
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
-            Kibotu.Log("Kibotu InitQuests 0.15");
+            Kibotu.Log("Kibotu InitQuests 0.19");
             
             var strUserProps = "";
             foreach (var pair in properties)

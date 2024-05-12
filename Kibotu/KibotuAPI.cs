@@ -305,6 +305,17 @@ namespace kibotu
             }
         }
 
+        public static void onClosedProgressUI(string questId)
+        {
+            var activeQuest = Controller.GetInstance().ActiveQuest;
+            if (activeQuest != null &&
+                activeQuest.Progress != null &&
+                activeQuest.Progress.Status == EnumQuestStates.Progress)
+            {
+                Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;                
+            }
+        }
+
         public static void TriggerQuestState(string eventName)
         {
             TriggerQuestState(eventName, new Dictionary<string, object>());
@@ -406,6 +417,8 @@ namespace kibotu
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
                             (cbquest) =>
                             {
+                                activeQuest.Progress.CurrentStep = cbquest.Progress.CurrentStep;
+                                
                                 if (activeQuest.Progress.CurrentStep >=
                                     activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
                                 {
@@ -453,11 +466,11 @@ namespace kibotu
                     if (activeQuest?.Progress?.ProgressKey != null && activeQuest?.Progress?.ProgressKey ==
                         Controller.GetInstance().LastShownProgressKey)
                     {
-                        Kibotu.Log("TryTriggersUI - false; Suppressing the same exact state");
+                        Kibotu.Log("TryTriggersUI - false; Suppressing the same exact state; ProgressKey: " + activeQuest?.Progress?.ProgressKey);
                         return false;
                     }
 
-                    Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;
+                    // Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;
                     return true;
                 }
             }
