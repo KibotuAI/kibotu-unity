@@ -117,13 +117,13 @@ namespace kibotu
                 (activeQuest) => { Kibotu.Log("Quest started on backend"); }));
         }
 
-        private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<KibotuQuest> callback)
+        private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<NewValueDto> callback)
         {
             StartCoroutine(ProgressQuestRequest(questId, eventName, eventProperties,
-                (activeQuest) =>
+                (newVal) =>
                 {
                     Kibotu.Log("Quest triggered on backend");
-                    callback(activeQuest);
+                    callback(newVal);
                 }));
         }
 
@@ -305,7 +305,7 @@ namespace kibotu
 
         private IEnumerator ProgressQuestRequest(
             string questId, string eventName, Dictionary<string, object> eventProperties,
-            Action<KibotuQuest> callback)
+            Action<NewValueDto> callback)
         {
             var url = Config.GetQuestActionPrefUrl + "/" + questId + "/trigger";
             var requestData = new Dictionary<string, object>
@@ -626,7 +626,7 @@ namespace kibotu
             GetInstance().DoQuestStart(questId, eventName, eventProperties);
         }
 
-        internal static void QuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<KibotuQuest> callback)
+        internal static void QuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<NewValueDto> callback)
         {
             GetInstance().DoQuestProgress(questId, eventName, eventProperties, callback);
         }
