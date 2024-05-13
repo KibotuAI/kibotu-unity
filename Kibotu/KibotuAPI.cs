@@ -421,10 +421,7 @@ namespace kibotu
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
                             (cbquest) =>
                             {
-                                if (activeQuest != null)
-                                {
-                                    activeQuest.Progress = cbquest?.Progress;
-                                }
+                                // TODO Compare cbquest.newValue with CurrentStep;
                                 
                                 if (activeQuest?.Progress.CurrentStep >=
                                     activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
