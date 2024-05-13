@@ -421,16 +421,16 @@ namespace kibotu
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
                             (cbquest) =>
                             {
-                                if (activeQuest != null && activeQuest.Progress != null)
+                                if (activeQuest != null)
                                 {
-                                    activeQuest.Progress.CurrentStep = cbquest?.NewValue;
-                                    
-                                    if (activeQuest.Progress.CurrentStep >=
-                                        activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
-                                    {
-                                        activeQuest.Progress.Status = EnumQuestStates.Won;
-                                        Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
-                                    }
+                                    activeQuest.Progress = cbquest?.Progress;
+                                }
+                                
+                                if (activeQuest?.Progress.CurrentStep >=
+                                    activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
+                                {
+                                    activeQuest.Progress.Status = EnumQuestStates.Won;
+                                    Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
                                 }
                             });
                     }
