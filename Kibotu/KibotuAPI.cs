@@ -22,7 +22,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "0.9.3";
+        internal const string KibotuUnityVersion = "1.0.24";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
@@ -512,6 +512,23 @@ namespace kibotu
             return false;
         }
 
+        public static void SubscribeToQuestProgressEvent(Action<KibotuEvent> callback)
+        {
+            Controller.GetInstance().SubscribeToQuestProgressEvent(callback);
+        }
+        
+        public static void SubscribeToLogs(Action<string> cb)
+        {
+            _onLogListeners.Clear(); // For now holding only one    
+            Kibotu._onLogListeners.Add(cb);
+        }
+        
+        public static void SubscribeToErrors(Action<string> cb)
+        {
+            Kibotu._onErrorLogListeners.Clear(); // For now holding only one
+            Kibotu._onErrorLogListeners.Add(cb);
+        }
+        
         public static void GetPersonalizedBanner(Dictionary<string, object> value, Action<Asset> callback)
         {
             var vvalue = new kibotu.Value();

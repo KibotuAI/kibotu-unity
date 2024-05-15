@@ -111,6 +111,14 @@ namespace kibotu
         [CanBeNull] public KibotuQuest ActiveQuest;
         public List<KibotuQuest> EligibleQuests;
 
+        private readonly List<Action<KibotuEvent>> _questProgressListeners = new List<Action<KibotuEvent>>();
+        
+        public void SubscribeToQuestProgressEvent(Action<KibotuEvent> cb)
+        {
+            _questProgressListeners.Clear(); // For now holding only one
+            _questProgressListeners.Add(cb);
+        }
+        
         private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             StartCoroutine(StartQuestRequest(questId, eventName, eventProperties,
@@ -124,6 +132,22 @@ namespace kibotu
                 {
                     Kibotu.Log("Quest triggered on backend");
                     callback(activeQuest);
+                    try
+                    {
+                        if (_questProgressListeners.Count > 0)
+                        {
+                            foreach (var listener in _questProgressListeners)
+                            {
+                                var dic = new Dictionary<string, object>();
+                                dic.Add("triggerEvent", eventName);
+                                listener.Invoke(new KibotuEvent("KibotuQuestStep", dic));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
+                    }
                 }));
         }
 
@@ -609,7 +633,7 @@ namespace kibotu
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
-            Kibotu.Log("Kibotu InitQuests 0.19");
+            Kibotu.Log("Kibotu InitQuests " + Kibotu.KibotuUnityVersion);
             
             var strUserProps = "";
             foreach (var pair in properties)
