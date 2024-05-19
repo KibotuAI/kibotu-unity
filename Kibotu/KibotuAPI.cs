@@ -288,7 +288,7 @@ namespace kibotu
             if (!IsInitialized()) return;
             Controller.InitQuests(properties);
         }
-        
+
         public static void onQuestRewardAction(string questId)
         {
             Controller.QuestFinalize(questId);
@@ -312,52 +312,71 @@ namespace kibotu
                 activeQuest.Progress != null &&
                 activeQuest.Progress.Status == EnumQuestStates.Progress)
             {
-                Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;                
+                Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;
             }
         }
 
-        public static void TriggerQuestState(string eventName)
+        public static Dictionary<string, object> TriggerQuestState(string eventName)
         {
-            TriggerQuestState(eventName, new Dictionary<string, object>());
+            return TriggerQuestState(eventName, new Dictionary<string, object>());
         }
 
         /**
          * Handles triggered event, could be progressing an active quest or starting a new quest.
          * Async method, result of this is bool - false: do nothing, true: show ActiveQuest modal.
          */
-        public static void TriggerQuestState(string eventName, Dictionary<string, object> eventProperties)
+        public static Dictionary<string, object> TriggerQuestState(string eventName,
+            Dictionary<string, object> eventProperties)
         {
             Kibotu.Log("TriggerQuestState eventName: " + eventName);
+            Dictionary<string, object> conditionsObj = new Dictionary<string, object>();
 
             // Logical sequence:
             // 1. Try activating a new quest
             // 2. Try processing an event for quest state 
             // 3. Try showing a modal for active quest
 
-            if (!IsInitialized()) return;
+            if (!IsInitialized())
+            {
+                Kibotu.Log("TriggerQuestState - !IsInitialized");
+                conditionsObj.Add("IsInitialized", "False");
+                return conditionsObj;
+            }
+
+            ;
             if (!Controller.GetInstance().SyncedQuests)
             {
+                conditionsObj.Add("SyncedQuests", "False");
                 Kibotu.Log("TriggerQuestState - no SyncedQuests yet; Skipping action...");
-                return;
+                return conditionsObj;
             }
 
             var userProps = Controller.GetInstance().UserPropsOnInit;
 
             var strUserProps = "";
             foreach (var pair in userProps)
-			{
-				strUserProps += pair.Key + " = " + pair.Value + "; ";
+            {
+                strUserProps += pair.Key + " = " + pair.Value + "; ";
             }
-			Kibotu.Log("TriggerQuestState userProps: " + strUserProps);
 
+            Kibotu.Log("TriggerQuestState userProps: " + strUserProps);
+
+            conditionsObj.Add("strUserProps", strUserProps);
             var activeQuest = GetActiveQuest();
 
             // Process event to trigger new quest
             if (activeQuest == null)
             {
+                conditionsObj.Add("activeQuest", "null");
                 Kibotu.Log("TriggerQuestState - no active quest found");
                 var eligibleQuests = GetEligibleQuestsDefinitions();
-                if (eligibleQuests == null) return;
+                if (eligibleQuests == null)
+                {
+                    conditionsObj.Add("eligibleQuests", "null");
+                    return conditionsObj;
+                }
+
+                ;
                 foreach (var quest in eligibleQuests)
                 {
                     // Get the first matching - 
@@ -373,13 +392,19 @@ namespace kibotu
                         Controller.GetInstance().ActiveQuest = quest;
                         activeQuest = quest;
 
+                        conditionsObj.Add("Starting quest",
+                            quest.Id + "; eventName: " + eventName + "; userProps: " + strUserProps);
                         Controller.QuestStart(quest.Id, eventName, eventProperties);
                         break;
                     }
                     else
                     {
                         // not starting this quest
-                        Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id + "; eventName: " + eventName + "; userProps: " + strUserProps);
+                        Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id + "; eventName: " +
+                                   eventName + "; userProps: " + strUserProps);
+                        conditionsObj.Add("Not starting quest"+ quest.Id,
+                            "; eventName: " + eventName +
+                            "; userProps: " + strUserProps);
                     }
                 }
             }
@@ -389,6 +414,9 @@ namespace kibotu
             {
                 Kibotu.Log("TriggerQuestState - active quest found");
 
+                conditionsObj.Add("activeQuest", activeQuest.ToString());
+                conditionsObj.Add("DateTime.Now", DateTime.Now.ToString());
+
                 // Process event for active event
                 if (activeQuest.TryTriggersStateProgressing(userProps, eventName, 0))
                 {
@@ -396,6 +424,8 @@ namespace kibotu
                          activeQuest.Progress.Status == EnumQuestStates.Progress) &&
                         activeQuest.to < DateTime.Now)
                     {
+                        conditionsObj.Add("Finishing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+                        
                         // Time's up - won't count the new event
                         if (activeQuest.Progress.CurrentStep < activeQuest.Milestones[0].Goal)
                         {
@@ -410,6 +440,8 @@ namespace kibotu
                     }
                     else
                     {
+                        conditionsObj.Add("Progressing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+
                         // Progressing the quest
                         activeQuest.Progress.Status = EnumQuestStates.Progress;
                         if (activeQuest != null && activeQuest.Progress != null &&
@@ -422,7 +454,7 @@ namespace kibotu
                             (cbquest) =>
                             {
                                 // TODO Compare cbquest.newValue with CurrentStep;
-                                
+
                                 if (activeQuest?.Progress.CurrentStep >=
                                     activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
                                 {
@@ -433,6 +465,8 @@ namespace kibotu
                     }
                 }
             }
+
+            return conditionsObj;
         }
 
         public static bool TriggerQuestUI(string eventName, Dictionary<string, object> eventProperties)
@@ -453,11 +487,11 @@ namespace kibotu
 
             if (activeQuest != null)
             {
-	            var strUserProps = "";
-    	        foreach (var pair in userProps)
-				{
-					strUserProps += pair.Key + " = " + pair.Value + "; ";
-            	}
+                var strUserProps = "";
+                foreach (var pair in userProps)
+                {
+                    strUserProps += pair.Key + " = " + pair.Value + "; ";
+                }
 
                 Kibotu.Log(
                     $"TriggerQuestUI - active quest found  questId: {activeQuest.Id}; current status: {activeQuest.Progress?.Status}; userProps: {strUserProps}");
@@ -470,7 +504,8 @@ namespace kibotu
                     if (activeQuest?.Progress?.ProgressKey != null && activeQuest?.Progress?.ProgressKey ==
                         Controller.GetInstance().LastShownProgressKey)
                     {
-                        Kibotu.Log("TryTriggersUI - false; Suppressing the same exact state; ProgressKey: " + activeQuest?.Progress?.ProgressKey);
+                        Kibotu.Log("TryTriggersUI - false; Suppressing the same exact state; ProgressKey: " +
+                                   activeQuest?.Progress?.ProgressKey);
                         return false;
                     }
 
@@ -516,19 +551,19 @@ namespace kibotu
         {
             Controller.GetInstance().SubscribeToQuestProgressEvent(callback);
         }
-        
+
         public static void SubscribeToLogs(Action<string> cb)
         {
             _onLogListeners.Clear(); // For now holding only one    
             Kibotu._onLogListeners.Add(cb);
         }
-        
+
         public static void SubscribeToErrors(Action<string> cb)
         {
             Kibotu._onErrorLogListeners.Clear(); // For now holding only one
             Kibotu._onErrorLogListeners.Add(cb);
         }
-        
+
         public static void GetPersonalizedBanner(Dictionary<string, object> value, Action<Asset> callback)
         {
             var vvalue = new kibotu.Value();
@@ -613,24 +648,24 @@ namespace kibotu
             private static double? Hash(string seed, string value, int version)
             {
                 // New hashing algorithm.
-        
+
                 if (version == 2)
                 {
                     var n = FNV32A(FNV32A(seed + value).ToString());
                     return (n % 10000) / 10000d;
                 }
-        
+
                 // Original hashing algorithm (with a bias flaw).
-        
+
                 if (version == 1)
                 {
                     var n = FNV32A(value + seed);
                     return (n % 1000) / 1000d;
                 }
-        
+
                 return null;
             }
-        
+
             /// <summary>
             /// Implementation of the Fowler–Noll–Vo algorithm (fnv32a) algorithm.
             /// </summary>
@@ -640,16 +675,16 @@ namespace kibotu
             {
                 uint hash = 0x811c9dc5;
                 uint prime = 0x01000193;
-        
+
                 foreach (char c in value.ToCharArray())
                 {
                     hash ^= c;
                     hash *= prime;
                 }
-        
+
                 return hash;
             }
-            
+
             /**
              * 50%/50%
              */
@@ -665,7 +700,7 @@ namespace kibotu
                 {
                     assigned = 1;
                 }
-        
+
                 return assigned != 1;
             }
         }

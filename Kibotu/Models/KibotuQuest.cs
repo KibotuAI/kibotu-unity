@@ -56,8 +56,11 @@ namespace kibotu
                 return Milestones[Milestones.Length - 1].Goal;
             }
         }
-        
 
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
 
         [CanBeNull]
         public string GetPrize()
