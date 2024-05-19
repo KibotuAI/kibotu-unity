@@ -450,7 +450,7 @@ namespace kibotu
                             activeQuest.Progress.CurrentStep++;
                         	conditionsObj.Add("Progressing quest - activeQuest.Progress.CurrentStep", activeQuest.Progress.CurrentStep);
                         } else {
-                        	conditionsObj.Add("Not progressing quest; aq: ", activeQuest.toString());
+                        	conditionsObj.Add("Not progressing quest; aq: ", activeQuest.ToString());
 						}
 
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
