@@ -187,7 +187,10 @@ namespace kibotu
         /// </summary>
         public static void Reset()
         {
+            _onLogListeners.Clear();
+            _onErrorLogListeners.Clear();
             if (!IsInitialized()) return;
+            Controller.Reset();
             KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.EVENTS);
             KibotuStorage.DeleteAllTrackingData(KibotuStorage.FlushType.PEOPLE);
             KibotuStorage.ResetSuperProperties();
@@ -444,8 +447,7 @@ namespace kibotu
 
                         // Progressing the quest
                         activeQuest.Progress.Status = EnumQuestStates.Progress;
-                        if (activeQuest != null && activeQuest.Progress != null &&
-                            activeQuest.Progress.CurrentStep != null)
+                        if (activeQuest.Progress != null)
                         {
                             activeQuest.Progress.CurrentStep++;
                         	conditionsObj.Add("Progressing quest - activeQuest.Progress.CurrentStep", activeQuest.Progress.CurrentStep);

@@ -645,6 +645,17 @@ namespace kibotu
             GetInstance().DoInitQuests(properties);
         }
 
+        private void ClearQuests()
+        {
+            _questProgressListeners.Clear();
+            LastShownProgressKey = null;
+            SyncedQuests = false;
+            PlayerId = null;
+            UserPropsOnInit = null;
+            ActiveQuest = null;
+            EligibleQuests = new List<KibotuQuest>();
+        }
+
         internal static void QuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             GetInstance().DoQuestStart(questId, eventName, eventProperties);
@@ -785,6 +796,11 @@ namespace kibotu
             {
                 KibotuStorage.HasUsedPeople = true;
             }
+        }
+
+        internal static void Reset()
+        {
+            GetInstance().ClearQuests();
         }
 
         internal static void DoClear()
