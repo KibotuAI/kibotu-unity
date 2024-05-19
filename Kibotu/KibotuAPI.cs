@@ -343,7 +343,7 @@ namespace kibotu
                 return conditionsObj;
             }
 
-            ;
+           
             if (!Controller.GetInstance().SyncedQuests)
             {
                 conditionsObj.Add("SyncedQuests", "False");
@@ -367,7 +367,7 @@ namespace kibotu
             // Process event to trigger new quest
             if (activeQuest == null)
             {
-                conditionsObj.Add("activeQuest", "null");
+                conditionsObj.Add("no activeQuest", "null");
                 Kibotu.Log("TriggerQuestState - no active quest found");
                 var eligibleQuests = GetEligibleQuestsDefinitions();
                 if (eligibleQuests == null)
@@ -448,7 +448,10 @@ namespace kibotu
                             activeQuest.Progress.CurrentStep != null)
                         {
                             activeQuest.Progress.CurrentStep++;
-                        }
+                        	conditionsObj.Add("Progressing quest - activeQuest.Progress.CurrentStep", activeQuest.Progress.CurrentStep);
+                        } else {
+                        	conditionsObj.Add("Not progressing quest; aq: ", activeQuest.toString());
+						}
 
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
                             (cbquest) =>
@@ -458,12 +461,18 @@ namespace kibotu
                                 if (activeQuest?.Progress.CurrentStep >=
                                     activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
                                 {
+		                        	conditionsObj.Add("Progress finish last goall qId: ", activeQuest.Id);
+
                                     activeQuest.Progress.Status = EnumQuestStates.Won;
                                     Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
-                                }
+                                } else {
+									conditionsObj.Add("Progress didnt finish last goal", "");
+								}
                             });
                     }
-                }
+                } else {
+	                conditionsObj.Add("TryTriggersStateProgressing else", "");
+				}
             }
 
             return conditionsObj;
