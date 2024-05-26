@@ -337,7 +337,8 @@ namespace kibotu
             // Logical sequence:
             // 1. Try activating a new quest
             // 2. Try processing an event for quest state 
-            // 3. Try showing a modal for active quest
+            // 2.1. Try progressing the quest
+            // 2.2. Try finishing the quest
 
             if (!IsInitialized())
             {
@@ -345,7 +346,6 @@ namespace kibotu
                 conditionsObj.Add("IsInitialized", "False");
                 return conditionsObj;
             }
-
            
             if (!Controller.GetInstance().SyncedQuests)
             {
@@ -378,8 +378,7 @@ namespace kibotu
                     conditionsObj.Add("eligibleQuests", "null");
                     return conditionsObj;
                 }
-
-                ;
+                
                 foreach (var quest in eligibleQuests)
                 {
                     // Get the first matching - 
@@ -428,18 +427,8 @@ namespace kibotu
                         activeQuest.to < DateTime.Now)
                     {
                         conditionsObj.Add("Finishing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
-                        
-                        // Time's up - won't count the new event
-                        if (activeQuest.Progress.CurrentStep < activeQuest.Milestones[0].Goal)
-                        {
-                            activeQuest.Progress.Status = EnumQuestStates.Lost;
-                        }
-                        else
-                        {
-                            activeQuest.Progress.Status = EnumQuestStates.Won;
-                        }
 
-                        Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
+                        DoFinishQuest(eventName, eventProperties, activeQuest);
                     }
                     else
                     {
@@ -475,9 +464,34 @@ namespace kibotu
                 } else {
 	                conditionsObj.Add("TryTriggersStateProgressing else", "");
 				}
+
+                if (activeQuest.TryTriggersStateFinishing(userProps, eventName, 0))
+                {
+                    conditionsObj.Add("TryTriggersStateFinishing Finishing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+                    DoFinishQuest(eventName, eventProperties, activeQuest);
+                }
+                else
+                {
+                    conditionsObj.Add("TryTriggersStateFinishing else", "");
+                }
             }
 
             return conditionsObj;
+        }
+
+        private static void DoFinishQuest(string eventName, Dictionary<string, object> eventProperties, KibotuQuest activeQuest)
+        {
+            // Time's up - won't count the new event
+            if (activeQuest.Progress.CurrentStep < activeQuest.Milestones[0].Goal)
+            {
+                activeQuest.Progress.Status = EnumQuestStates.Lost;
+            }
+            else
+            {
+                activeQuest.Progress.Status = EnumQuestStates.Won;
+            }
+
+            Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
         }
 
         public static bool TriggerQuestUI(string eventName, Dictionary<string, object> eventProperties)

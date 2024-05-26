@@ -119,12 +119,46 @@ namespace kibotu
                 var isTriggerMatching = Triggers.State.Progress.FindAll(x => x == eventName).Count > 0;
                 if (isTriggerMatching)
                 {
-                    // Check if properties matches conditions
-                    if (TryPassingConditions(JObject.FromObject(properties)))
-                    {
+                    // Wen the quest was started - no need to pass conditions again
+                    // In the future we could check eventProps here
+                    
+                    //// // Check if properties matches conditions
+                    //// if (TryPassingConditions(JObject.FromObject(properties)))
+                    //// {
                         // Increment progress
                         return true;
+                    //// }
+                }
+            }
+            else
+            {
+                // Active quest not in relevant state
+            }
+
+            return false;
+        }
+    
+        public bool TryTriggersStateFinishing(Dictionary<string, object> properties, string eventName, int? eventValue)
+        {
+            // Check if current event triggers the quest
+            if (Progress != null && (Progress.Status == EnumQuestStates.Welcome || Progress.Status == EnumQuestStates.Progress))
+            {
+                if (to < DateTime.Now)
+                {
+                    var isTriggerMatching = Triggers.State.Finish.FindAll(x => x == eventName).Count > 0;
+                    if (isTriggerMatching)
+                    {
+                        // // Check if properties matches conditions
+                        // if (TryPassingConditions(JObject.FromObject(properties)))
+                        // {
+                        //    Finish progress
+                        return true;
+                        // }
                     }
+                }
+                else
+                {
+                    // Not ended yet 
                 }
             }
             else
@@ -167,6 +201,20 @@ namespace kibotu
             }
 
             return false;
+        }
+
+        public bool ValidateQuestObject()
+        {
+            if (Progress is null)
+            {
+                Debug.LogWarning("Progress is null for quest " + Id);
+            }
+            if (Milestones is null || Milestones.Length == 0)
+            {
+                Debug.LogWarning("Milestones is null or empty for quest " + Id);
+            }
+
+            return true;
         }
     }
 }
