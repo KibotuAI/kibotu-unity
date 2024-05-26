@@ -179,7 +179,6 @@ namespace kibotu
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
                 try {
-
                     if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
                     {
                         Kibotu.Log("Quests initialization: Active quest found: " + activeQuest.Id);
@@ -267,10 +266,16 @@ namespace kibotu
                     Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                 }
                 
-                
                 Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
                 Kibotu.Log("Quests initialized; EligibleQuests:" + strEligibleQuests);
+                
+                // Validate results:
+                activeQuest.ValidateQuestObject();
+                foreach (var q in EligibleQuests)
+                {
+                    q.ValidateQuestObject();
+                }
             }));
         }
 
