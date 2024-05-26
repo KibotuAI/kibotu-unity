@@ -15,12 +15,14 @@ namespace kibotu
         {
             Background = other.Background;
             TitleImage = other.TitleImage;
+            MainImage = other.MainImage;
             // Base = other.Base;
             // Preview = other.Preview;
         }
 
         [JsonProperty("background")] public string Background;
         [JsonProperty("titleImage")] public string TitleImage;
+        [JsonProperty("mainImage")] public string MainImage;
         // [JsonProperty("base")] public string Base;
         // [JsonProperty("preview")] public string Preview;
     }
