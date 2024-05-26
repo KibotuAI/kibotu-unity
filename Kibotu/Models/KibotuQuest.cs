@@ -14,7 +14,7 @@ namespace kibotu
         public KibotuQuest()
         {
         }
-        
+
         public KibotuQuest(KibotuQuest other)
         {
             Id = other.Id;
@@ -24,7 +24,7 @@ namespace kibotu
 
             Milestones = new KibotuQuestProgressMilestone[other.Milestones.Length];
             other.Milestones.CopyTo(Milestones, 0);
-            
+
             CountryCodes = other.CountryCodes ?? new List<string>();
             Graphics = new KibotuQuestGraphics(other.Graphics);
             Triggers = new KibotuQuestTriggers(other.Triggers);
@@ -43,18 +43,15 @@ namespace kibotu
         [JsonProperty("graphics")] public KibotuQuestGraphics Graphics;
         [JsonProperty("triggers")] public KibotuQuestTriggers Triggers;
         [JsonProperty("collectibleIconImage")] public string CollectibleIconImage;
-        
-        [JsonProperty("targetFilter")]
-        public JObject TargetFilter;
+
+        [JsonProperty("targetFilter")] public JObject TargetFilter;
 
         public DateTime from;
         public DateTime to;
+
         public int TotalSteps
         {
-            get
-            {
-                return Milestones[Milestones.Length - 1].Goal;
-            }
+            get { return Milestones[Milestones.Length - 1].Goal; }
         }
 
         public override string ToString()
@@ -107,26 +104,28 @@ namespace kibotu
 
             return false;
         }
-        
+
         /**
          * true to increment the progress for an active state
          */
-        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName, int? eventValue)
+        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName,
+            int? eventValue)
         {
             // Check if current event triggers the quest
-            if (Progress != null && (Progress.Status == EnumQuestStates.Welcome || Progress.Status == EnumQuestStates.Progress))
+            if (Progress != null && (Progress.Status == EnumQuestStates.Welcome ||
+                                     Progress.Status == EnumQuestStates.Progress))
             {
                 var isTriggerMatching = Triggers.State.Progress.FindAll(x => x == eventName).Count > 0;
                 if (isTriggerMatching)
                 {
                     // Wen the quest was started - no need to pass conditions again
                     // In the future we could check eventProps here
-                    
+
                     //// // Check if properties matches conditions
                     //// if (TryPassingConditions(JObject.FromObject(properties)))
                     //// {
-                        // Increment progress
-                        return true;
+                    // Increment progress
+                    return true;
                     //// }
                 }
             }
@@ -137,11 +136,12 @@ namespace kibotu
 
             return false;
         }
-    
+
         public bool TryTriggersStateFinishing(Dictionary<string, object> properties, string eventName, int? eventValue)
         {
             // Check if current event triggers the quest
-            if (Progress != null && (Progress.Status == EnumQuestStates.Welcome || Progress.Status == EnumQuestStates.Progress))
+            if (Progress != null && (Progress.Status == EnumQuestStates.Welcome ||
+                                     Progress.Status == EnumQuestStates.Progress))
             {
                 if (to < DateTime.Now)
                 {
@@ -176,10 +176,10 @@ namespace kibotu
             {
                 return false;
             }
-            
+
             // Check if current event can trigger the UI
             List<string> triggersAllowList = new List<string>();
-            
+
             switch (Progress.Status)
             {
                 case EnumQuestStates.Welcome:
@@ -193,7 +193,7 @@ namespace kibotu
                     triggersAllowList = Triggers.UI.Finish;
                     break;
             }
-            
+
             var isTriggerMatching = triggersAllowList.FindAll(x => x == eventName).Count > 0;
             if (isTriggerMatching)
             {
@@ -209,9 +209,25 @@ namespace kibotu
             {
                 Debug.LogWarning("Progress is null for quest " + Id);
             }
+
             if (Milestones is null || Milestones.Length == 0)
             {
                 Debug.LogWarning("Milestones is null or empty for quest " + Id);
+            }
+
+            if (Graphics is null)
+            {
+                Debug.LogWarning("Graphics is null or empty for quest " + Id);
+            }
+
+            if (Triggers is null)
+            {
+                Debug.LogWarning("Triggers is null or empty for quest " + Id);
+            }
+
+            if (TargetFilter is null)
+            {
+                Debug.LogWarning("TargetFilter is null or empty for quest " + Id);
             }
 
             return true;
