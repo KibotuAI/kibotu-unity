@@ -181,19 +181,19 @@ namespace kibotu
 
             if (op == "$lt")
             {
-                return actualComparableValue is null || actualComparableValue?.CompareTo(conditionValue) < 0;
+                return actualComparableValue is not null && actualComparableValue?.CompareTo(conditionValue) < 0;
             }
             if (op == "$lte")
             {
-                return actualComparableValue is null || actualComparableValue?.CompareTo(conditionValue) <= 0;
+                return actualComparableValue is not null && actualComparableValue?.CompareTo(conditionValue) <= 0;
             }
             if (op == "$gt")
             {
-                return actualComparableValue is null || actualComparableValue?.CompareTo(conditionValue) > 0;
+                return actualComparableValue is not null && actualComparableValue?.CompareTo(conditionValue) > 0;
             }
             if (op == "$gte")
             {
-                return actualComparableValue is null || actualComparableValue?.CompareTo(conditionValue) >= 0;
+                return actualComparableValue is not null && actualComparableValue?.CompareTo(conditionValue) >= 0;
             }
 
             if (op == "$regex")
