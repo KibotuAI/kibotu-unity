@@ -49,6 +49,11 @@ namespace kibotu
         public DateTime from;
         public DateTime to;
 
+        public int TotalCheckmarks
+        {
+            get { return Milestones.Length; }
+        }
+        
         public int TotalSteps
         {
             get { return Milestones[Milestones.Length - 1].Goal; }
