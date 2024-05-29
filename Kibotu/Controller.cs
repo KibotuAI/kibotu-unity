@@ -169,6 +169,11 @@ namespace kibotu
             {
                 PlayerId = playerId.ToString();
             }
+            else
+            {
+                Kibotu.LogError("DoInitQuests missing PlayerId, cannot sync quests");
+                return;
+            }
 
             if (SyncedQuests == true)
             {
