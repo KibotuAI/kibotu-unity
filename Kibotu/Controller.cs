@@ -178,6 +178,15 @@ namespace kibotu
             
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
+                // // var aqStr =
+                // //     "{\"triggers\":{\"state\":{\"welcome\":[\"LoadingFinished\",\"ScreenOpen\"],\"progress\":[\"QuestMatchWin\"],\"finish\":[\"QuestMatchWin\"]},\"ui\":{\"welcome\":[\"Main_AutoShowPopup\"],\"progress\":[\"Main_AutoShowPopup\"],\"finish\":[\"Main_AutoShowPopup\"]}},\"graphics\":{\"welcome\":{\"base\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_welcome_6.png\",\"preview\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_welcome_6.png\",\"background\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_welcome_6.png\",\"titleImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/title6.png\"},\"progress\":{\"base\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_progress_11.png\",\"preview\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_progress_11.png\",\"background\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_progress_11.png\",\"titleImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/title6.png\"},\"lost\":{\"base\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_lost_1.png\",\"preview\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_lost_1.png\",\"background\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_lost_1.png\",\"titleImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/title6.png\"},\"won\":{\"base\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_won_4.png\",\"preview\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_won_4.png\",\"background\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/bg_won_4.png\",\"titleImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/title6.png\"}},\"_id\":\"6633b03465c65318e7ebc443\",\"occasionId\":\"660abd15955ae352a287356e\",\"game\":\"6583303707dffc13b366a9d3\",\"enabled\":true,\"name\":\"Birthday 1\",\"targetFilter\":{\"$and\":[{\"userName\":{\"$in\":[\"kibotu30\",\"kibotu31\",\"kibotu32\"]}},{\"totalMatchesPlayedOfEveryType\":{\"$exists\":true}},{\"totalMatchesPlayedOfEveryType\":{\"$gt\":8}},{\"$or\":[{\"abClass\":\"c\"},{\"abClass\":\"d\"}]}]},\"from\":\"2023-05-10T22:00:00.000Z\",\"to\":\"2024-05-20T07:00:00.000Z\",\"countryCodesArray\":[\"*\"],\"statesArray\":[],\"milestones\":[{\"_id\":\"66504cd858e8f1945d6b5ffb\",\"order\":1,\"prizeTitle\":\"Epic Lootball\",\"prizeImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/p1-2.png\",\"prizeSku\":\"level1\",\"goal\":10,\"goalImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/g1.png\"},{\"_id\":\"66504cd858e8f1945d6b5ffc\",\"order\":2,\"prizeTitle\":\"Epic Lootball\",\"prizeImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/p2-2.png\",\"prizeSku\":\"level2\",\"goal\":20,\"goalImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/g2.png\"},{\"_id\":\"66504cd858e8f1945d6b5ffd\",\"order\":3,\"prizeTitle\":\"Epic Lootball\",\"prizeImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/p3-3.png\",\"prizeSku\":\"level3\",\"goal\":30,\"goalImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/g3.png\"}],\"collectibleIconImage\":\"https://us-img1.kibotu.ai/beast_league/quests/questPhantoBirthday/icon2.png\",\"id\":\"6633b03465c65318e7ebc443\",\"progress\":{\"questId\":\"6633b03465c65318e7ebc443\",\"status\":\"started\",\"questProgress\":\"4\"}}";
+                // UserPropsOnInit["abClass"] = "c";
+                // UserPropsOnInit["totalMatchesPlayedOfEveryType"] = 10;
+                // UserPropsOnInit["userName"] = "kibotu30";
+                // UserPropsOnInit["username"] = "kibotu30";
+                // KibotuQuest response = JsonConvert.DeserializeObject<KibotuQuest>(aqStr);
+                // activeQuest = response;
+                
                 try {
                     if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
                     {
@@ -231,8 +240,7 @@ namespace kibotu
                         try {
                             strEligibleQuests += "Graphics.Welcome.Background: " + q.Graphics.Welcome.Background + "; ";
                             strEligibleQuests += "Graphics.Welcome.TitleImage: " + q.Graphics.Progress.TitleImage + "; ";
-                        }
-                        catch (Exception ex)
+                        } catch (Exception ex)
                         {
                             Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                         }
@@ -305,7 +313,7 @@ namespace kibotu
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     // Handle error
-                    Kibotu.LogError("Error: " + request.error);
+                    Kibotu.LogError("Error: " + request.error + "; was accessing: " + url + "; Serialized request: " + jsonRequest);
                     callback(default);
                 }
                 else

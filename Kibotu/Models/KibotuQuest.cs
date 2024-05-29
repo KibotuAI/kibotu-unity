@@ -113,8 +113,7 @@ namespace kibotu
         /**
          * true to increment the progress for an active state
          */
-        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName,
-            int? eventValue)
+        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName, int? eventValue)
         {
             // Check if current event triggers the quest
             if (Progress != null && (Progress.Status == EnumQuestStates.Welcome ||
