@@ -25,6 +25,7 @@ namespace kibotu
         [JsonProperty("prizeTitle")] public string PrizeTitle;
         [JsonProperty("prizeImage")] public string PrizeImage;
         [JsonProperty("prizeSku")] public string PrizeSku;
+        [JsonProperty("prizeValue")] public string PrizeValue;
         [JsonProperty("goal")] public int Goal;
         [JsonProperty("goalImage")] public string GoalImage;
     }
