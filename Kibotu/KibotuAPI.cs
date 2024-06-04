@@ -285,6 +285,11 @@ namespace kibotu
             Controller.DoTrack(eventName, properties);
         }
 
+        public static void SetFakeQuest(KibotuQuest quest)
+        {
+            Controller.GetInstance().SetFakeQuest(quest);
+        }
+        
         // Init quests - fetch quests config from the backend
         public static void InitQuests(Dictionary<string, object> properties)
         {

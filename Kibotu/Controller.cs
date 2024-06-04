@@ -112,20 +112,21 @@ namespace kibotu
         public List<KibotuQuest> EligibleQuests;
 
         private readonly List<Action<KibotuEvent>> _questProgressListeners = new List<Action<KibotuEvent>>();
-        
+
         public void SubscribeToQuestProgressEvent(Action<KibotuEvent> cb)
         {
             _questProgressListeners.Clear(); // For now holding only one
             _questProgressListeners.Add(cb);
         }
-        
+
         private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             StartCoroutine(StartQuestRequest(questId, eventName, eventProperties,
                 (activeQuest) => { Kibotu.Log("Quest started on backend"); }));
         }
 
-        private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<KibotuQuest> callback)
+        private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties,
+            Action<KibotuQuest> callback)
         {
             StartCoroutine(ProgressQuestRequest(questId, eventName, eventProperties,
                 (activeQuest) =>
@@ -159,7 +160,8 @@ namespace kibotu
 
         private void DoQuestFinalize(string questId)
         {
-            StartCoroutine(FinalizeQuestRequest(questId, (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
+            StartCoroutine(FinalizeQuestRequest(questId,
+                (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
         }
 
         private void DoInitQuests(Dictionary<string, object> requestData)
@@ -180,7 +182,7 @@ namespace kibotu
                 Kibotu.Log("InitQuests skip processing - already synced");
                 return;
             }
-            
+
             StartCoroutine(InitQuestsRequest(requestData, (activeQuest, quests, finalizedQuestIds) =>
             {
                 // // var aqStr =
@@ -191,8 +193,9 @@ namespace kibotu
                 // UserPropsOnInit["username"] = "kibotu30";
                 // KibotuQuest response = JsonConvert.DeserializeObject<KibotuQuest>(aqStr);
                 // activeQuest = response;
-                
-                try {
+
+                try
+                {
                     if (activeQuest != null && !String.IsNullOrEmpty(activeQuest.Id))
                     {
                         Kibotu.Log("Quests initialization: Active quest found: " + activeQuest.Id);
@@ -202,7 +205,8 @@ namespace kibotu
                 catch (Exception ex)
                 {
                     Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
-                }                
+                }
+
                 // filter out all finalizedQuestIds from quests by object id
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
@@ -211,7 +215,8 @@ namespace kibotu
                            EligibleQuests.Count);
 
                 var strEligibleQuests = "";
-                try {
+                try
+                {
                     foreach (var q in EligibleQuests)
                     {
                         strEligibleQuests += q.Id + "; ";
@@ -230,31 +235,40 @@ namespace kibotu
                         {
                             Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                         }
-                        
-                        try {
+
+                        try
+                        {
                             strEligibleQuests += "Milestones: ";
-                            foreach (var m in q.Milestones) {
-                                strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " + m.PrizeSku + "   ";
+                            foreach (var m in q.Milestones)
+                            {
+                                strEligibleQuests += "order: " + m.Order + "; prize: " + m.PrizeTitle + " - " +
+                                                     m.PrizeSku + "   ";
                             }
                         }
                         catch (Exception ex)
                         {
                             Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                         }
-                        
-                        try {
+
+                        try
+                        {
                             strEligibleQuests += "Graphics.Welcome.Background: " + q.Graphics.Welcome.Background + "; ";
-                            strEligibleQuests += "Graphics.Welcome.TitleImage: " + q.Graphics.Progress.TitleImage + "; ";
-                        } catch (Exception ex)
+                            strEligibleQuests +=
+                                "Graphics.Welcome.TitleImage: " + q.Graphics.Progress.TitleImage + "; ";
+                        }
+                        catch (Exception ex)
                         {
                             Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                         }
-                        
-                        try 
+
+                        try
                         {
-                            if (q.Progress != null) {
+                            if (q.Progress != null)
+                            {
                                 strEligibleQuests += "Progress.CurrentState: " + q.Progress.CurrentState;
-                            } else {
+                            }
+                            else
+                            {
                                 strEligibleQuests += "No Progress";
                             }
                         }
@@ -262,7 +276,9 @@ namespace kibotu
                         {
                             Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                         }
-                        try {
+
+                        try
+                        {
                             foreach (var fi in q.TargetFilter)
                             {
                                 strEligibleQuests += "TargetFilter: " + fi.Key + ":" + fi.Value + ";";
@@ -278,11 +294,11 @@ namespace kibotu
                 {
                     Kibotu.LogError("Error: " + ex.Message + "; StackTrace: " + ex.StackTrace);
                 }
-                
+
                 Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
                 Kibotu.Log("Quests initialized; EligibleQuests:" + strEligibleQuests);
-                
+
                 // Validate results:
                 activeQuest.ValidateQuestObject();
                 foreach (var q in EligibleQuests)
@@ -318,16 +334,17 @@ namespace kibotu
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     // Handle error
-                    Kibotu.LogError("Error: " + request.error + "; was accessing: " + url + "; Serialized request: " + jsonRequest);
+                    Kibotu.LogError("Error: " + request.error + "; was accessing: " + url + "; Serialized request: " +
+                                    jsonRequest);
                     callback(default);
                 }
                 else
                 {
                     // Handle successful response
                     string jsonResponse = request.downloadHandler.text;
-                    
+
                     Kibotu.Log("DBG Raw Response: " + jsonResponse);
-                    
+
                     // TResponse response = JsonUtility.FromJson<TResponse>(jsonResponse);
                     TResponse response = JsonConvert.DeserializeObject<TResponse>(jsonResponse);
                     callback(response);
@@ -380,7 +397,7 @@ namespace kibotu
             KibotuQuest response1 = null;
             KibotuListResult<KibotuQuest> response2 = null;
             KibotuListResult<string> response3 = null;
-            
+
             // Start the first request
             yield return StartCoroutine(PerformPostRequest(Config.GetQuestsActiveUrl, requestData,
                 (KibotuQuest response) => { response1 = response; }));
@@ -388,7 +405,7 @@ namespace kibotu
                 (KibotuListResult<KibotuQuest> response) => { response2 = response; }));
             yield return StartCoroutine(PerformPostRequest(Config.GetQuestsFinalizedUrl, requestData,
                 (KibotuListResult<string> response) => { response3 = response; }));
-            
+
             // Wait until both requests are completed
             yield return new WaitUntil(() => response1 != null && response2 != null && response3 != null);
 
@@ -640,7 +657,7 @@ namespace kibotu
                 properties["_kb_android_model"] = SystemInfo.deviceModel;
                 properties["_kb_android_app_version"] = Application.version;
 #else
-                        properties["_kb_lib_version"] = Kibotu.KibotuUnityVersion;
+                properties["_kb_lib_version"] = Kibotu.KibotuUnityVersion;
 #endif
                 _autoEngageProperties = properties;
             }
@@ -648,18 +665,28 @@ namespace kibotu
             return _autoEngageProperties;
         }
 
+        internal void SetFakeQuest(KibotuQuest quest)
+        {
+            Kibotu.LogError("Kibotu: You are using a fake quest;");
+            SyncedQuests = true;
+            ActiveQuest = quest;
+            EligibleQuests = new List<KibotuQuest>();
+            EligibleQuests.Add(quest);
+        }
+
         [CanBeNull]
         internal static void InitQuests(Dictionary<string, object> properties)
         {
             Kibotu.Log("Kibotu InitQuests " + Kibotu.KibotuUnityVersion);
-            
+
             var strUserProps = "";
             foreach (var pair in properties)
             {
                 strUserProps += pair.Key + " = " + pair.Value + "; ";
             }
+
             Kibotu.Log("InitQuests userProps: " + strUserProps);
-            
+
             GetInstance().DoInitQuests(properties);
         }
 
@@ -679,22 +706,23 @@ namespace kibotu
             GetInstance().DoQuestStart(questId, eventName, eventProperties);
         }
 
-        internal static void QuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties, Action<KibotuQuest> callback)
+        internal static void QuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties,
+            Action<KibotuQuest> callback)
         {
             GetInstance().DoQuestProgress(questId, eventName, eventProperties, callback);
         }
-        
+
         internal static void QuestFinish(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
             GetInstance().DoQuestFinish(questId, eventName, eventProperties);
         }
-        
+
         internal static void QuestFinalize(string questId)
         {
             GetInstance().DoQuestFinalize(questId);
-            
+
             // Remove immediatelly from eligible quests list
-            GetInstance().ActiveQuest = null; 
+            GetInstance().ActiveQuest = null;
             GetInstance().EligibleQuests = GetInstance().EligibleQuests.Where(x => x.Id != questId).ToList();
         }
 
