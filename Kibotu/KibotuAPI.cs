@@ -289,12 +289,21 @@ namespace kibotu
         {
             Controller.GetInstance().SetFakeQuest(quest);
         }
-        
-        // Init quests - fetch quests config from the backend
+
         public static void InitQuests(Dictionary<string, object> properties)
         {
-            if (!IsInitialized()) return;
-            Controller.InitQuests(properties);
+            InitQuests(properties, null);
+        }
+
+        // Init quests - fetch quests config from the backend
+        public static void InitQuests(Dictionary<string, object> properties, Action<bool> cb)
+        {
+            if (!IsInitialized())
+            {
+                cb(false);
+                return;
+            };
+            Controller.InitQuests(properties, cb);
         }
 
         public static void onQuestRewardAction(string questId)

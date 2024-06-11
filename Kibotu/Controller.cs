@@ -112,7 +112,7 @@ namespace kibotu
         public List<KibotuQuest> EligibleQuests;
 
         private readonly List<Action<KibotuEvent>> _questProgressListeners = new List<Action<KibotuEvent>>();
-
+        
         public void SubscribeToQuestProgressEvent(Action<KibotuEvent> cb)
         {
             _questProgressListeners.Clear(); // For now holding only one
@@ -164,7 +164,7 @@ namespace kibotu
                 (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
         }
 
-        private void DoInitQuests(Dictionary<string, object> requestData)
+        private void DoInitQuests(Dictionary<string, object> requestData, Action<bool> cb)
         {
             UserPropsOnInit = requestData;
             if (requestData.TryGetValue("playerId", out var playerId))
@@ -210,6 +210,11 @@ namespace kibotu
                 // filter out all finalizedQuestIds from quests by object id
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
+                
+                if (cb != null)
+                {
+                    cb(true);
+                }
 
                 Kibotu.Log("Quests initialized; 00 Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
@@ -675,7 +680,7 @@ namespace kibotu
         }
 
         [CanBeNull]
-        internal static void InitQuests(Dictionary<string, object> properties)
+        internal static void InitQuests(Dictionary<string, object> properties, Action<bool> cb)
         {
             Kibotu.Log("Kibotu InitQuests " + Kibotu.KibotuUnityVersion);
 
@@ -686,8 +691,7 @@ namespace kibotu
             }
 
             Kibotu.Log("InitQuests userProps: " + strUserProps);
-
-            GetInstance().DoInitQuests(properties);
+            GetInstance().DoInitQuests(properties, cb);
         }
 
         private void ClearQuests()
