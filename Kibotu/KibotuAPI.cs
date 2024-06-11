@@ -22,7 +22,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "1.0.24";
+        internal const string KibotuUnityVersion = "1.0.34";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.

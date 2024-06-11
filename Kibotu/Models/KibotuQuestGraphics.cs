@@ -19,8 +19,6 @@ namespace kibotu
             Lost = new KibotuQuestGraphic(other.Lost);
             Won = new KibotuQuestGraphic(other.Won);
         }
-
-
         
         [JsonProperty("welcome")] public KibotuQuestGraphic Welcome;
         // [JsonProperty("started")] public KibotuQuestGraphic Started;
@@ -43,6 +41,6 @@ namespace kibotu
                 default:
                     return null;
             }
-        }
+        } 
     }
 }

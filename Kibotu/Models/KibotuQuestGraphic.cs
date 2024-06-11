@@ -22,8 +22,14 @@ namespace kibotu
 
         [JsonProperty("background")] public string Background;
         [JsonProperty("titleImage")] public string TitleImage;
+
         [JsonProperty("mainImage")] public string MainImage;
+
         // [JsonProperty("base")] public string Base;
         // [JsonProperty("preview")] public string Preview;
+        public List<string> GetAllImages()
+        {
+            return new List<string> { Background, TitleImage, MainImage };
+        }
     }
 }

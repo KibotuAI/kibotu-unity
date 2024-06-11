@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -28,6 +29,7 @@ namespace kibotu
             CountryCodes = other.CountryCodes ?? new List<string>();
             Graphics = new KibotuQuestGraphics(other.Graphics);
             Triggers = new KibotuQuestTriggers(other.Triggers);
+            IconImage = other.IconImage;
             CollectibleIconImage = other.CollectibleIconImage;
             TargetFilter = other.TargetFilter ?? new JObject();
             from = other.from;
@@ -43,7 +45,7 @@ namespace kibotu
         [JsonProperty("graphics")] public KibotuQuestGraphics Graphics;
         [JsonProperty("triggers")] public KibotuQuestTriggers Triggers;
         [JsonProperty("collectibleIconImage")] public string CollectibleIconImage;
-
+        [JsonProperty("iconImage")] public string IconImage;
         [JsonProperty("targetFilter")] public JObject TargetFilter;
 
         public DateTime from;
@@ -53,7 +55,7 @@ namespace kibotu
         {
             get { return Milestones.Length; }
         }
-        
+
         public int TotalSteps
         {
             get { return Milestones[Milestones.Length - 1].Goal; }
@@ -83,7 +85,7 @@ namespace kibotu
 
             return null;
         }
-        
+
         [CanBeNull]
         public string GetPrizeValue()
         {
@@ -103,7 +105,7 @@ namespace kibotu
 
             return null;
         }
-        
+
         public bool TryPassingConditions(JObject properties)
         {
             var match = new ConditionEvaluationProvider().EvalCondition(properties, TargetFilter);
@@ -133,7 +135,8 @@ namespace kibotu
         /**
          * true to increment the progress for an active state
          */
-        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName, int? eventValue)
+        public bool TryTriggersStateProgressing(Dictionary<string, object> properties, string eventName,
+            int? eventValue)
         {
             // Check if current event triggers the quest
             if (Progress != null && (Progress.Status == EnumQuestStates.Welcome ||
@@ -255,6 +258,35 @@ namespace kibotu
             }
 
             return true;
+        }
+
+        public List<string> GetAllImages()
+        {
+            List<string> images = new List<string>();
+
+            if (Graphics != null && this.Progress != null)
+            {
+                var questGraphic = Graphics.GetGraphic(this.Progress?.Status);
+                if (questGraphic != null)
+                {
+                    images.AddRange(questGraphic.GetAllImages());
+                }
+            }
+
+            images.Add(IconImage);
+
+            // Foreach on Milestones
+            foreach (var milestone in Milestones)
+            {
+                if (!string.IsNullOrEmpty(IconImage))
+                {
+                    images.Add(milestone.PrizeImage);
+                }
+            }
+
+            // Filter out empty values
+            List<string> filteredUrls = images.Where(s => !string.IsNullOrEmpty(s)).ToList();
+            return filteredUrls;
         }
     }
 }
