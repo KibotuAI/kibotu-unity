@@ -110,19 +110,31 @@ namespace kibotu
         [CanBeNull] public Dictionary<string, object> UserPropsOnInit;
         [CanBeNull] public KibotuQuest ActiveQuest;
         public List<KibotuQuest> EligibleQuests;
+        public bool StartQuestInProgress = false;
+        public bool FinishQuestInProgress = false;
 
         private readonly List<Action<KibotuEvent>> _questProgressListeners = new List<Action<KibotuEvent>>();
-        
+
         public void SubscribeToQuestProgressEvent(Action<KibotuEvent> cb)
         {
             _questProgressListeners.Clear(); // For now holding only one
             _questProgressListeners.Add(cb);
         }
 
-        private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
+        private void DoQuestStart(string questId, string eventName, Dictionary<string, object> eventProperties,
+            Action<bool> cb)
         {
+            GetInstance().StartQuestInProgress = true;
             StartCoroutine(StartQuestRequest(questId, eventName, eventProperties,
-                (activeQuest) => { Kibotu.Log("Quest started on backend"); }));
+                (activeQuest) =>
+                {
+                    GetInstance().StartQuestInProgress = false;
+                    Kibotu.Log("Quest started on backend");
+                    if (cb != null)
+                    {
+                        cb(true);
+                    }
+                }));
         }
 
         private void DoQuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties,
@@ -154,8 +166,13 @@ namespace kibotu
 
         private void DoQuestFinish(string questId, string eventName, Dictionary<string, object> eventProperties)
         {
+            GetInstance().FinishQuestInProgress = true;
             StartCoroutine(FinishQuestRequest(questId, eventName, eventProperties,
-                (activeQuest) => { Kibotu.Log("Quest finished on backend"); }));
+                (activeQuest) =>
+                {
+                    GetInstance().FinishQuestInProgress = false;
+                    Kibotu.Log("Quest finished on backend");
+                }));
         }
 
         private void DoQuestFinalize(string questId)
@@ -174,12 +191,14 @@ namespace kibotu
             else
             {
                 Kibotu.LogError("DoInitQuests missing PlayerId, cannot sync quests");
+                cb(false);
                 return;
             }
 
             if (SyncedQuests == true)
             {
                 Kibotu.Log("InitQuests skip processing - already synced");
+                cb(false);
                 return;
             }
 
@@ -210,13 +229,14 @@ namespace kibotu
                 // filter out all finalizedQuestIds from quests by object id
                 EligibleQuests = quests.List.Where(x => !finalizedQuestIds.List.Contains(x.Id)).ToList();
                 SyncedQuests = true;
-                
+
                 if (cb != null)
                 {
                     cb(true);
                 }
 
-                Kibotu.Log("Quests initialized; 00 Total quests: " + quests.List.Count + ", Eligible quests: " +
+                // The code below is for logging
+                Kibotu.Log("Quests initialized; Total quests: " + quests.List.Count + ", Eligible quests: " +
                            EligibleQuests.Count);
 
                 var strEligibleQuests = "";
@@ -705,9 +725,21 @@ namespace kibotu
             EligibleQuests = new List<KibotuQuest>();
         }
 
-        internal static void QuestStart(string questId, string eventName, Dictionary<string, object> eventProperties)
+        internal static void QuestStart(
+            string questId,
+            string eventName,
+            Dictionary<string, object> eventProperties)
         {
-            GetInstance().DoQuestStart(questId, eventName, eventProperties);
+            QuestStart(questId, eventName, eventProperties, null);
+        }
+
+        internal static void QuestStart(
+            string questId,
+            string eventName,
+            Dictionary<string, object> eventProperties,
+            Action<bool> cb)
+        {
+            GetInstance().DoQuestStart(questId, eventName, eventProperties, cb);
         }
 
         internal static void QuestProgress(string questId, string eventName, Dictionary<string, object> eventProperties,

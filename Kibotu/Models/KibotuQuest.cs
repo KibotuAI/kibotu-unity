@@ -39,6 +39,7 @@ namespace kibotu
         [JsonProperty("_id")] public string Id;
         [JsonProperty("name")] public string Title;
         [JsonProperty("enabled")] public string Enabled;
+        [JsonProperty("settings")] [CanBeNull] public KibotuQuestSettings Settings;
         [JsonProperty("progress")] [CanBeNull] public KibotuQuestProgress Progress;
         [JsonProperty("milestones")] public KibotuQuestProgressMilestone[] Milestones;
         [JsonProperty("countryCodesArray")] public List<string> CountryCodes;

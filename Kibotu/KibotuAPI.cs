@@ -22,7 +22,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "1.0.35";
+        internal const string KibotuUnityVersion = "1.0.36";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
@@ -302,7 +302,8 @@ namespace kibotu
             {
                 cb(false);
                 return;
-            };
+            }
+
             Controller.InitQuests(properties, cb);
         }
 
@@ -311,6 +312,7 @@ namespace kibotu
             Controller.QuestFinalize(questId);
         }
 
+        [Obsolete("This method is deprecated use onClosedProgressUI instead.")]
         public static void onClosedWelcomeUI(string questId)
         {
             var activeQuest = Controller.GetInstance().ActiveQuest;
@@ -327,12 +329,20 @@ namespace kibotu
             var activeQuest = Controller.GetInstance().ActiveQuest;
             if (activeQuest != null &&
                 activeQuest.Progress != null &&
-                activeQuest.Progress.Status == EnumQuestStates.Progress)
+                (
+                    activeQuest.Progress.Status == EnumQuestStates.Progress ||
+                    activeQuest.Progress.Status == EnumQuestStates.Welcome ||
+                    activeQuest.Progress.Status == EnumQuestStates.Lost))
             {
                 Controller.GetInstance().LastShownProgressKey = activeQuest?.Progress?.ProgressKey;
             }
         }
 
+        public static void StartQuest(string questId, string eventName, Dictionary<string, object> eventProperties, Action<bool> cb)
+        {
+            Controller.QuestStart(questId, eventName, eventProperties, cb);
+        }
+        
         public static Dictionary<string, object> TriggerQuestState(string eventName)
         {
             return TriggerQuestState(eventName, new Dictionary<string, object>());
@@ -360,7 +370,7 @@ namespace kibotu
                 conditionsObj.Add("IsInitialized", "False");
                 return conditionsObj;
             }
-           
+
             if (!Controller.GetInstance().SyncedQuests)
             {
                 conditionsObj.Add("SyncedQuests", "False");
@@ -392,7 +402,7 @@ namespace kibotu
                     conditionsObj.Add("eligibleQuests", "null");
                     return conditionsObj;
                 }
-                
+
                 foreach (var quest in eligibleQuests)
                 {
                     // Get the first matching - 
@@ -410,7 +420,16 @@ namespace kibotu
 
                         conditionsObj.Add("Starting quest",
                             quest.Id + "; eventName: " + eventName + "; userProps: " + strUserProps);
-                        Controller.QuestStart(quest.Id, eventName, eventProperties);
+                        if (quest.Settings?.requiredOptInToQuest == true)
+                        {
+                            // Wait for manual opt-in
+                        }
+                        else
+                        {
+                            // Auto-opt-in
+                            Controller.QuestStart(quest.Id, eventName, eventProperties);
+                        }
+
                         break;
                     }
                     else
@@ -418,7 +437,7 @@ namespace kibotu
                         // not starting this quest
                         Kibotu.Log("TriggerQuestState - not starting this quest: " + quest.Id + "; eventName: " +
                                    eventName + "; userProps: " + strUserProps);
-                        conditionsObj.Add("Not starting quest"+ quest.Id,
+                        conditionsObj.Add("Not starting quest" + quest.Id,
                             "; eventName: " + eventName +
                             "; userProps: " + strUserProps);
                     }
@@ -428,7 +447,7 @@ namespace kibotu
             // activeQuest might be set in the previous block 
             if (activeQuest != null)
             {
-                Kibotu.Log("TriggerQuestState - active quest found");
+                Kibotu.Log("TriggerQuestState - active quest found: " + activeQuest.Id);
 
                 conditionsObj.Add("activeQuest", activeQuest.ToString());
                 conditionsObj.Add("DateTime.Now", DateTime.Now.ToString());
@@ -440,23 +459,28 @@ namespace kibotu
                          activeQuest.Progress.Status == EnumQuestStates.Progress) &&
                         activeQuest.to < DateTime.Now)
                     {
-                        conditionsObj.Add("Finishing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+                        conditionsObj.Add("Finishing quest - activeQuest.Progress.Status",
+                            activeQuest.Progress.Status.ToString());
 
                         DoFinishQuest(eventName, eventProperties, activeQuest);
                     }
                     else
                     {
-                        conditionsObj.Add("Progressing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+                        conditionsObj.Add("Progressing quest - activeQuest.Progress.Status",
+                            activeQuest.Progress.Status.ToString());
 
                         // Progressing the quest
                         activeQuest.Progress.Status = EnumQuestStates.Progress;
                         if (activeQuest.Progress != null)
                         {
                             activeQuest.Progress.CurrentStep++;
-                        	conditionsObj.Add("Progressing quest - activeQuest.Progress.CurrentStep", activeQuest.Progress.CurrentStep);
-                        } else {
-                        	conditionsObj.Add("Not progressing quest; aq: ", activeQuest.ToString());
-						}
+                            conditionsObj.Add("Progressing quest - activeQuest.Progress.CurrentStep",
+                                activeQuest.Progress.CurrentStep);
+                        }
+                        else
+                        {
+                            conditionsObj.Add("Not progressing quest; aq: ", activeQuest.ToString());
+                        }
 
                         Controller.QuestProgress(activeQuest.Id, eventName, eventProperties,
                             (cbquest) =>
@@ -466,22 +490,27 @@ namespace kibotu
                                 if (activeQuest?.Progress.CurrentStep >=
                                     activeQuest.Milestones[activeQuest.Milestones.Length - 1].Goal)
                                 {
-		                        	conditionsObj.Add("Progress finish last goall qId: ", activeQuest.Id);
+                                    conditionsObj.Add("Progress finish last goall qId: ", activeQuest.Id);
 
                                     activeQuest.Progress.Status = EnumQuestStates.Won;
                                     Controller.QuestFinish(activeQuest.Id, eventName, eventProperties);
-                                } else {
-									conditionsObj.Add("Progress didnt finish last goal", "");
-								}
+                                }
+                                else
+                                {
+                                    conditionsObj.Add("Progress didnt finish last goal", "");
+                                }
                             });
                     }
-                } else {
-	                conditionsObj.Add("TryTriggersStateProgressing else", "");
-				}
+                }
+                else
+                {
+                    conditionsObj.Add("TryTriggersStateProgressing else", "");
+                }
 
                 if (activeQuest.TryTriggersStateFinishing(userProps, eventName, 0))
                 {
-                    conditionsObj.Add("TryTriggersStateFinishing Finishing quest - activeQuest.Progress.Status", activeQuest.Progress.Status.ToString());
+                    conditionsObj.Add("TryTriggersStateFinishing Finishing quest - activeQuest.Progress.Status",
+                        activeQuest?.Progress?.Status.ToString());
                     DoFinishQuest(eventName, eventProperties, activeQuest);
                 }
                 else
@@ -493,7 +522,8 @@ namespace kibotu
             return conditionsObj;
         }
 
-        private static void DoFinishQuest(string eventName, Dictionary<string, object> eventProperties, KibotuQuest activeQuest)
+        private static void DoFinishQuest(string eventName, Dictionary<string, object> eventProperties,
+            KibotuQuest activeQuest)
         {
             // Time's up - won't count the new event
             if (activeQuest.Progress.CurrentStep < activeQuest.Milestones[0].Goal)
@@ -635,6 +665,21 @@ namespace kibotu
         public static string ConsumePredictIdOfEvent(string eventName)
         {
             return !IsInitialized() ? null : Controller.ConsumePredictIdOfEvent(eventName);
+        }
+
+        public static bool QuestUpdateInProgress()
+        {
+            return (Controller.GetInstance().StartQuestInProgress || Controller.GetInstance().FinishQuestInProgress);
+        }
+
+        public static bool StartQuestInProgress()
+        {
+            return Controller.GetInstance().StartQuestInProgress;
+        }
+
+        public static bool FinishQuestInProgress()
+        {
+            return Controller.GetInstance().FinishQuestInProgress;
         }
 
         /// <summary>
