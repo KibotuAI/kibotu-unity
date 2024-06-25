@@ -22,7 +22,7 @@ namespace kibotu
     /// </code>
     public static partial class Kibotu
     {
-        internal const string KibotuUnityVersion = "1.0.36";
+        internal const string KibotuUnityVersion = "1.0.37";
 
         /// <summary>
         /// Creates an Kibotu instance. Use only if you have enabled "Manual Initialization" from your Project Settings.
@@ -292,7 +292,10 @@ namespace kibotu
 
         public static void InitQuests(Dictionary<string, object> properties)
         {
-            InitQuests(properties, null);
+            InitQuests(properties, success =>
+            {
+                
+            });
         }
 
         // Init quests - fetch quests config from the backend

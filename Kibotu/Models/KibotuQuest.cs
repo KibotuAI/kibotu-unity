@@ -52,6 +52,37 @@ namespace kibotu
         public DateTime from;
         public DateTime to;
 
+        public int CurrentStep
+        {
+            get
+            {
+                return Progress?.CurrentStep ?? 0;
+            }
+        }
+
+        /**
+         * Returns current milestone index.
+         * If already finished milestones 0,1 and currently progressing milestone 2 - returns 2
+         */
+        public int CurrentCheckmark
+        {
+            get
+            {
+                // Iterate over milestones check if we have reached the goal
+                for (int i = 0; i < Milestones.Length; i++)
+                {
+                    var curMile = Milestones[i];
+                    if (Progress?.CurrentStep < curMile.Goal)
+                    {
+                        // This milestone is not achieved yet
+                        return i;
+                    }
+                }
+
+                return 0;
+            }
+        }
+
         public int TotalCheckmarks
         {
             get { return Milestones.Length; }
@@ -273,7 +304,8 @@ namespace kibotu
                     images.AddRange(questGraphic.GetAllImages());
                 }
             }
-
+            
+            images.Add(CollectibleIconImage);
             images.Add(IconImage);
 
             // Foreach on Milestones
